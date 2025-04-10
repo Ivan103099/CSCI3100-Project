@@ -37,6 +37,10 @@ body {
     border-radius: 20px; /* Smoother button edges for all buttons */
     transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover */
 }
+.signup-btn:disabled {
+    background-color: #ccc; /* Grey out the button when disabled */
+    cursor: not-allowed; /* Change cursor to indicate disabled state */
+}
 .signup-btn:hover {
     transform: scale(1.05); /* Slight scale up on hover */
     box-shadow: 0 0 10px rgba(0,0,0,0.2); /* Brighter shadow */
