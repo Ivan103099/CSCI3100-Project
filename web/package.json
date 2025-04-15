@@ -1,0 +1,37 @@
+{
+  "name": "finawise-web",
+  "version": "1.0.0",
+  "description": "Personal Finance Management Web App",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build"
+  },
+  "author": "Group B7",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@tailwindcss/vite": "^4.1.3",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.5"
+  },
+  "dependencies": {
+    "@internationalized/date": "^3.7.0",
+    "@tanstack/react-query": "^5.72.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jotai": "^2.12.2",
+    "lucide-react": "^0.487.0",
+    "react": "^19.1.0",
+    "react-aria-components": "^1.7.1",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.5.0",
+    "recharts": "^2.15.2",
+    "tailwind-merge": "^3.2.0",
+    "tailwindcss": "^4.1.3",
+    "tailwindcss-react-aria-components": "^2.0.0"
+  }
+}
