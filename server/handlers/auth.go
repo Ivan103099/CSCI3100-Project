@@ -33,11 +33,11 @@ func newAuthHandler(c *container.Container) Handler {
 }
 
 func (h *AuthHandler) Mount(router *mux.Router) {
-	r := router.PathPrefix("/api/auth").Subrouter()
-	r.Handle("/register", h.handleRegister()).Methods(http.MethodPost)
-	r.Handle("/login", h.handleLogin()).Methods(http.MethodPost)
-	r.Handle("/logout", h.handleLogout()).Methods(http.MethodPost)
-	r.Handle("/account", middlewares.Auth(h.config.Secret)(h.handleAccount())).Methods(http.MethodGet)
+	r := router.PathPrefix("/auth").Subrouter()
+	r.Handle("/register", h.handleRegister()).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/login", h.handleLogin()).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/logout", h.handleLogout()).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/account", middlewares.Auth(h.config.Secret)(h.handleAccount())).Methods(http.MethodGet, http.MethodOptions)
 }
 
 func (h *AuthHandler) handleRegister() httpx.HandlerFunc {
@@ -130,7 +130,6 @@ func (h *AuthHandler) handleLogin() httpx.HandlerFunc {
 			Expires:  expire.Add(1 * time.Minute),
 			Secure:   req.IsTLS(),
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
 		})
 		return res.Status(http.StatusOK).JSON(account, "")
 	}

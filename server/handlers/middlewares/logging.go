@@ -9,13 +9,13 @@ import (
 	"github.com/tnychn/httpx"
 )
 
-func Logging() mux.MiddlewareFunc {
+func Logging(debug bool) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return httpx.HandlerFunc(func(req *httpx.Request, res *httpx.Responder) error {
 			start := time.Now()
 			err := httpx.H(next)(req, res)
 			duration := time.Since(start)
-			if err != nil {
+			if err != nil && debug {
 				if res.StatusCode == http.StatusInternalServerError {
 					log.Debug().Int64("size", res.Size).
 						Dur("duration", duration).

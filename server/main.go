@@ -68,11 +68,16 @@ func main() {
 	config := config.MustLoad()
 	router := mux.NewRouter()
 
-	router.Use(middlewares.Logging())
+	router.Use(middlewares.CORS(*debug))
+	router.Use(middlewares.Logging(*debug))
 	router.Use(func(handler http.Handler) http.Handler {
 		return http.MaxBytesHandler(handler, HTTPMaxBytes)
 	})
+
 	router.NotFoundHandler = httpx.HandlerFunc(func(req *httpx.Request, res *httpx.Responder) error {
+		if req.Method == http.MethodOptions {
+			return res.Status(http.StatusNoContent).NoContent()
+		}
 		return httpx.ErrNotFound
 	})
 	router.MethodNotAllowedHandler = httpx.HandlerFunc(func(req *httpx.Request, res *httpx.Responder) error {
