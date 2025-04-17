@@ -110,7 +110,11 @@ export const useLogoutMutation = () =>
 				endpoint: "auth/logout",
 				method: "POST",
 			}),
-		onSuccess: () => store.set($account, undefined),
+		onSuccess: () => {
+			store.set($account, undefined);
+			client.cancelQueries();
+			client.invalidateQueries();
+		},
 	});
 
 export const useCreateTransactionMutation = () => {
