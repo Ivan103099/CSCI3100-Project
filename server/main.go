@@ -89,8 +89,9 @@ func main() {
 		"repository": repository.New(config),
 	})
 
+	r := router.PathPrefix("/api").Subrouter()
 	for _, provider := range handlers.Handlers {
-		provider(c).Mount(router)
+		provider(c).Mount(r)
 	}
 
 	log.Debug().Msg("initializing dependencies")

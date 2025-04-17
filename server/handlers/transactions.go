@@ -32,7 +32,7 @@ func newTransactionsHandler(c *container.Container) Handler {
 }
 
 func (h *TransactionsHandler) Mount(router *mux.Router) {
-	r := router.PathPrefix("/api/transactions").Subrouter()
+	r := router.PathPrefix("/transactions").Subrouter()
 	r.Use(middlewares.Auth(h.config.Secret))
 	r.Handle("", h.handleList()).Methods(http.MethodGet)
 	r.Handle("", h.handleCreate()).Methods(http.MethodPost)

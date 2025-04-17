@@ -29,7 +29,7 @@ func newCategoriesHandler(c *container.Container) Handler {
 }
 
 func (h *CategoriesHandler) Mount(router *mux.Router) {
-	r := router.PathPrefix("/api/categories").Subrouter()
+	r := router.PathPrefix("/categories").Subrouter()
 	r.Use(middlewares.Auth(h.config.Secret))
 	r.Handle("", h.handleGet()).Methods(http.MethodGet)
 }

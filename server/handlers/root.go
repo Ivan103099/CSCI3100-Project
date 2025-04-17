@@ -28,9 +28,8 @@ func newRootHandler(c *container.Container) Handler {
 }
 
 func (h *RootHandler) Mount(router *mux.Router) {
-	r := router.PathPrefix("/api").Subrouter()
 	guard := middlewares.Auth(h.config.Secret)
-	r.Handle("/summary", guard(h.handleGetSummary())).Methods(http.MethodGet)
+	router.Handle("/summary", guard(h.handleGetSummary())).Methods(http.MethodGet)
 }
 
 func (h *RootHandler) handleGetSummary() httpx.HandlerFunc {
