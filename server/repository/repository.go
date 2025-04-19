@@ -116,10 +116,10 @@ func (r *repository) FindAccountByEmail(email string) (a models.Account, err err
 
 func (r *repository) GetAccountSummary(aid int64) (as models.AccountSummary, err error) {
 	s, args := SQL.Select(
-		`SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END)
-			- SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) AS balance`,
-		`SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END) AS income`,
-		`SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END) AS expense`,
+		`IFNULL(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END)
+			- SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS balance`,
+		`IFNULL(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END), 0) AS income`,
+		`IFNULL(SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense`,
 	).
 		From("transactions t").
 		Join("categories c ON t.category_id = c.id").
