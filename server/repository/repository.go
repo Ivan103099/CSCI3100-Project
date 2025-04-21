@@ -31,6 +31,7 @@ type Repository interface {
 
 	GetAccountSummary(aid int64) (as models.AccountSummary, err error)
 
+	CreateCategory(c models.Category) (types.ID, error)
 	GetCategories(gid int64) ([]models.Category, error)
 
 	CreateTransaction(t models.Transaction) (types.ID, error)
@@ -127,6 +128,16 @@ func (r *repository) GetAccountSummary(aid int64) (as models.AccountSummary, err
 		MustSQL()
 	err = r.db.Get(&as, s, args...)
 	return
+}
+
+func (r *repository) CreateCategory(c models.Category) (types.ID, error) {
+	cid := types.MakeID()
+	s, args := SQL.Insert("categories").
+		Columns("id", "group_id", "name", "type").
+		Values(cid, c.GroupID, c.Name, c.Type).
+		MustSQL()
+	_, err := r.db.Exec(s, args...)
+	return cid, err
 }
 
 func (r *repository) GetCategories(gid int64) (c []models.Category, err error) {
