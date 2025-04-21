@@ -121,6 +121,7 @@ func (r *repository) GetAccountSummary(aid int64) (as models.AccountSummary, err
 			- SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS balance`,
 		`IFNULL(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END), 0) AS income`,
 		`IFNULL(SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense`,
+		`0 as budget`,
 	).
 		From("transactions t").
 		Join("categories c ON t.category_id = c.id").
