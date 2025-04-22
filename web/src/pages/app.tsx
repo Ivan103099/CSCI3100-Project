@@ -1,16 +1,14 @@
 import React from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { getLocalTimeZone, startOfMonth, now } from "@internationalized/date";
-import { type Key, Pressable, Form } from "react-aria-components";
+import { Pressable, Form } from "react-aria-components";
 import {
-	BarChart,
 	CreditCard,
-	DollarSign,
 	Home,
+	LayoutGrid,
 	LogOut,
 	PiggyBank,
 	Plus,
-	Users,
 } from "lucide-react";
 
 import {
@@ -44,22 +42,12 @@ const LINKS = [
 	{
 		title: "Budgets",
 		href: "/budgets",
-		Icon: DollarSign,
-	},
-	{
-		title: "Savings",
-		href: "/savings",
 		Icon: PiggyBank,
 	},
 	{
-		title: "Reports",
-		href: "/reports",
-		Icon: BarChart,
-	},
-	{
-		title: "Groups",
-		href: "/groups",
-		Icon: Users,
+		title: "Categories",
+		href: "/categories",
+		Icon: LayoutGrid,
 	},
 ];
 
@@ -343,3 +331,4 @@ export function AppLayout() {
 }
 
 export { default as AppDashboardPage } from "./app/index";
+export { default as AppCategoriesPage } from "./app/categories";

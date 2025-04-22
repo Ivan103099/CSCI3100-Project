@@ -15,7 +15,7 @@ import { client } from "@/lib/client";
 
 import Toast from "./components/Toast";
 import { AuthLayout, AuthLoginPage, AuthRegisterPage } from "./pages/auth";
-import { AppLayout, AppDashboardPage } from "./pages/app";
+import { AppLayout, AppDashboardPage, AppCategoriesPage } from "./pages/app";
 
 declare module "react-aria-components" {
 	interface RouterConfig {
@@ -35,9 +35,7 @@ const App = () => {
 							<Route index element={<AppDashboardPage />} />
 							<Route path="transactions" />
 							<Route path="budgets" />
-							<Route path="savings" />
-							<Route path="reports" />
-							<Route path="groups" />
+							<Route path="categories" element={<AppCategoriesPage />} />
 						</Route>
 						<Route element={<AuthLayout />}>
 							<Route path="login" element={<AuthLoginPage />} />
