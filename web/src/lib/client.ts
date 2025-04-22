@@ -29,7 +29,7 @@ export type Transaction = {
 	time: number;
 };
 
-export type Summary = {
+export type AccountSummary = {
 	income: number;
 	expense: number;
 	balance: number;
@@ -156,7 +156,7 @@ export const useAccountQuery = () =>
 	});
 
 export const useAccountSummaryQuery = () =>
-	useQuery<Summary>({
+	useQuery<AccountSummary>({
 		queryKey: ["account", "summary"],
 		queryFn: () => request({ endpoint: "account/summary" }),
 		enabled: !!store.get($authed),

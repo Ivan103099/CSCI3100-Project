@@ -8,12 +8,13 @@ import {
 	ArrowUp,
 	DollarSign,
 	CreditCard,
+	PiggyBank,
 } from "lucide-react";
 
 import {
 	$account,
-	type Summary,
-	useSummaryQuery,
+	type AccountSummary,
+	useAccountSummaryQuery,
 	useCategoriesQuery,
 	useTransactionsQuery,
 } from "@/lib/client";
@@ -46,9 +47,14 @@ const SummaryCards = () => {
 			border: "border-t-red-500",
 			Icon: <ArrowDown className="text-red-500" />,
 		},
+		budget: {
+			title: "Budget",
+			border: "border-t-yellow-500",
+			Icon: <PiggyBank className="text-yellow-500" />,
+		},
 	};
 
-	const querySummary = useSummaryQuery();
+	const querySummary = useAccountSummaryQuery();
 
 	if (!querySummary.isSuccess) {
 		return <></>;
@@ -56,7 +62,7 @@ const SummaryCards = () => {
 	return (
 		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 			{Object.entries(querySummary.data).map(([key, value]) => {
-				const { title, border, Icon } = PROPS[key as keyof Summary];
+				const { title, border, Icon } = PROPS[key as keyof AccountSummary];
 				return (
 					<Card
 						key={key}
@@ -87,7 +93,7 @@ const RecentTransactions = () => {
 		return <></>;
 	}
 	return (
-		<Card>
+		<Card className="flex flex-col justify-between h-full">
 			<Card.Header>
 				<Card.Title>Recent Transactions</Card.Title>
 				<Card.Description>
@@ -218,7 +224,7 @@ const ExpenseBreakdown = () => {
 const BudgetPlan = () => {
 	const navigate = useNavigate();
 	return (
-		<Card>
+		<Card className="flex flex-col justify-between h-full">
 			<Card.Header>
 				<Card.Title>Budget Plan</Card.Title>
 				<Card.Description>
@@ -243,7 +249,7 @@ const BudgetPlan = () => {
 const SavingGoals = () => {
 	const navigate = useNavigate();
 	return (
-		<Card>
+		<Card className="flex flex-col justify-between h-full">
 			<Card.Header>
 				<Card.Title>Savings Goals</Card.Title>
 				<Card.Description>
