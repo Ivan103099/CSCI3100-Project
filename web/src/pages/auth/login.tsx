@@ -50,7 +50,7 @@ export default function AuthLoginPage() {
 						label="Email"
 						isRequired
 						value={email}
-						onInput={(e) => setEmail(e.currentTarget.value)}
+						onChange={setEmail}
 						placeholder="name@example.com"
 					/>
 					<TextField
@@ -58,7 +58,7 @@ export default function AuthLoginPage() {
 						label="Password"
 						isRequired
 						value={password}
-						onInput={(e) => setPassword(e.currentTarget.value)}
+						onChange={setPassword}
 					/>
 					<Button type="submit" className="w-full">
 						Login

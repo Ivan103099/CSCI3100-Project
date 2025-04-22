@@ -64,7 +64,7 @@ export default function AuthRegisterPage() {
 						label="Email"
 						isRequired
 						value={email}
-						onInput={(e) => setEmail(e.currentTarget.value)}
+						onChange={setEmail}
 						placeholder="name@example.com"
 					/>
 					<TextField
@@ -72,7 +72,7 @@ export default function AuthRegisterPage() {
 						label="Password"
 						isRequired
 						value={password}
-						onInput={(e) => setPassword(e.currentTarget.value)}
+						onChange={setPassword}
 					/>
 					<TextField
 						type="password"
@@ -87,7 +87,7 @@ export default function AuthRegisterPage() {
 						label="Full Name"
 						isRequired
 						value={fullname}
-						onInput={(e) => setFullname(e.currentTarget.value)}
+						onChange={setFullname}
 					/>
 					<TextField type="text" label="License Key" isRequired />
 					<Button type="submit" className="w-full">
