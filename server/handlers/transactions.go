@@ -43,7 +43,6 @@ func (h *TransactionsHandler) handleList() httpx.HandlerFunc {
 	type Params struct {
 		CategoryID types.ID       `query:"cid" validate:"omitempty,ulid"`
 		Type       models.TxnType `query:"type" validate:"omitempty,oneof=income expense"`
-		Grouped    bool           `query:"grouped" validate:"omitempty,boolean"`
 	}
 	return func(req *httpx.Request, res *httpx.Responder) (err error) {
 		session := req.GetValue("session").(middlewares.Session)
@@ -53,15 +52,8 @@ func (h *TransactionsHandler) handleList() httpx.HandlerFunc {
 			return err
 		}
 
-		var id int64 = -1
-		if params.Grouped {
-			id = session.GroupID
-		} else {
-			id = session.AccountID
-		}
-
 		var results []models.Transaction
-		results, err = h.repo.ListTransactions(id, params.CategoryID, params.Type, params.Grouped)
+		results, err = h.repo.ListTransactions(session.AccountID, params.CategoryID, params.Type)
 		if err != nil {
 			return err
 		}

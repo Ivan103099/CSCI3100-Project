@@ -35,7 +35,7 @@ type Repository interface {
 	GetCategories(gid int64) ([]models.Category, error)
 
 	CreateTransaction(t models.Transaction) (types.ID, error)
-	ListTransactions(id int64, cid types.ID, txntype models.TxnType, grouped bool) ([]models.Transaction, error)
+	ListTransactions(id int64, cid types.ID, txntype models.TxnType) ([]models.Transaction, error)
 }
 
 type repository struct {
@@ -160,14 +160,9 @@ func (r *repository) CreateTransaction(t models.Transaction) (types.ID, error) {
 	return tid, err
 }
 
-func (r *repository) ListTransactions(id int64, cid types.ID, txntype models.TxnType, grouped bool) (results []models.Transaction, err error) {
+func (r *repository) ListTransactions(id int64, cid types.ID, txntype models.TxnType) (results []models.Transaction, err error) {
 	// TODO: implement pagination
-	eq := make(sq.Eq)
-	if grouped {
-		eq["c.group_id"] = id
-	} else {
-		eq["t.account_id"] = id
-	}
+	eq := sq.Eq{"t.account_id": id}
 	if !cid.IsZero() {
 		eq["c.id"] = cid
 	}
