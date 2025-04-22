@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"finawise.app/server/config"
 	"finawise.app/server/container"
 	"finawise.app/server/handlers/middlewares"
-	"finawise.app/server/models"
 	"finawise.app/server/repository"
 )
 
@@ -34,48 +32,8 @@ func newAuthHandler(c *container.Container) Handler {
 
 func (h *AuthHandler) Mount(router *mux.Router) {
 	r := router.PathPrefix("/auth").Subrouter()
-	r.Handle("/register", h.handleRegister()).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/login", h.handleLogin()).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/logout", h.handleLogout()).Methods(http.MethodPost, http.MethodOptions)
-	r.Handle("/account", middlewares.Auth(h.config.Secret)(h.handleAccount())).Methods(http.MethodGet, http.MethodOptions)
-}
-
-func (h *AuthHandler) handleRegister() httpx.HandlerFunc {
-	type Params struct {
-		Email    string `json:"email" validate:"required,email"`
-		Fullname string `json:"fullname" validate:"required,min=1,max=50,printascii"`
-		Password string `json:"password" validate:"required,min=8,max=50,printascii"` // plain text
-	}
-	return func(req *httpx.Request, res *httpx.Responder) error {
-		var params Params
-		if err := req.Bind(&params); err != nil {
-			return err
-		}
-
-		_, err := h.repo.FindAccountByEmail(params.Email)
-		if err != nil {
-			if err != repository.ErrNoRows {
-				return err
-			}
-		} else {
-			return res.Status(http.StatusConflict).String("account already exists")
-		}
-
-		passhash, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return err
-		}
-
-		id, err := h.repo.CreateAccount(models.Account{
-			Email:    params.Email,
-			Fullname: params.Fullname,
-			Passhash: string(passhash),
-		})
-		if err != nil {
-			return err
-		}
-		return res.Status(http.StatusCreated).String(fmt.Sprint(id))
-	}
 }
 
 func (h *AuthHandler) handleLogin() httpx.HandlerFunc {
@@ -147,16 +105,5 @@ func (h *AuthHandler) handleLogout() httpx.HandlerFunc {
 			SameSite: http.SameSiteStrictMode,
 		})
 		return res.Status(http.StatusOK).NoContent()
-	}
-}
-
-func (h *AuthHandler) handleAccount() httpx.HandlerFunc {
-	return func(req *httpx.Request, res *httpx.Responder) error {
-		session := req.GetValue("session").(middlewares.Session)
-		account, err := h.repo.GetAccount(session.AccountID)
-		if err != nil {
-			return err
-		}
-		return res.Status(http.StatusOK).JSON(account, "")
 	}
 }

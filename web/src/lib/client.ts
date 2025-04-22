@@ -89,20 +89,6 @@ export const useLoginMutation = () =>
 		onSuccess: (data) => store.set($account, data),
 	});
 
-export const useRegisterMutation = () =>
-	useMutation({
-		mutationFn: (data: {
-			email: string;
-			fullname: string;
-			password: string;
-		}) =>
-			request({
-				endpoint: "auth/register",
-				method: "POST",
-				body: data,
-			}),
-	});
-
 export const useLogoutMutation = () =>
 	useMutation({
 		mutationFn: () =>
@@ -115,6 +101,20 @@ export const useLogoutMutation = () =>
 			client.cancelQueries();
 			client.invalidateQueries();
 		},
+	});
+
+export const useRegisterMutation = () =>
+	useMutation({
+		mutationFn: (data: {
+			email: string;
+			fullname: string;
+			password: string;
+		}) =>
+			request({
+				endpoint: "account",
+				method: "POST",
+				body: data,
+			}),
 	});
 
 export const useCreateTransactionMutation = () => {
@@ -142,7 +142,7 @@ export const useAccountQuery = () =>
 	useQuery<Account>({
 		queryKey: ["account"],
 		queryFn: () =>
-			request({ endpoint: "auth/account" })
+			request({ endpoint: "account" })
 				.then((data) => {
 					store.set($account, data);
 					return data;
@@ -155,10 +155,10 @@ export const useAccountQuery = () =>
 		staleTime: 1000,
 	});
 
-export const useSummaryQuery = () =>
+export const useAccountSummaryQuery = () =>
 	useQuery<Summary>({
-		queryKey: ["summary"],
-		queryFn: () => request({ endpoint: "summary" }),
+		queryKey: ["account", "summary"],
+		queryFn: () => request({ endpoint: "account/summary" }),
 		enabled: !!store.get($authed),
 	});
 
