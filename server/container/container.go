@@ -10,11 +10,12 @@ type Dependencies map[string]any
 type Provider[T any] func(c *Container) T
 
 type Container struct {
-	deps Dependencies
+	deps   Dependencies
+	values map[string]any
 }
 
 func New(deps Dependencies) *Container {
-	return &Container{deps: deps}
+	return &Container{deps: deps, values: make(map[string]any)}
 }
 
 func do[T any](c *Container, f func(dep T) error) (errs map[string]error) {
@@ -64,5 +65,19 @@ func Use[T any](c *Container, name string) T {
 	if dep, ok := c.deps[name]; ok {
 		return dep.(T)
 	}
-	panic(fmt.Errorf(`dependency named "%s" does not exist`, name))
+	panic(fmt.Errorf(`dependency "%s" does not exist`, name))
+}
+
+func Set(c *Container, name string, value any) {
+	if _, ok := c.deps[name]; ok {
+		panic(fmt.Errorf(`value "%s" already exists`, name))
+	}
+	c.values[name] = value
+}
+
+func Get[T any](c *Container, name string) T {
+	if value, ok := c.values[name]; ok {
+		return value.(T)
+	}
+	panic(fmt.Errorf(`value "%s" does not exist`, name))
 }

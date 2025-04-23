@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS "categories" (
     "group_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL CHECK ("type" IN ("income", "expense")),
+    UNIQUE ("group_id", "name", "type"),
     FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE ON UPDATE CASCADE
     FOREIGN KEY ("type") REFERENCES "TYPE"("name") ON DELETE CASCADE ON UPDATE CASCADE
 );

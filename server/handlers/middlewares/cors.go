@@ -7,7 +7,6 @@ import (
 	"github.com/tnychn/httpx"
 )
 
-// TODO: consider using rs/cors or gorilla/handlers instead
 func CORS(debug bool) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return httpx.HandlerFunc(func(req *httpx.Request, res *httpx.Responder) error {

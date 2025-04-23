@@ -3,6 +3,8 @@ package types
 import (
 	"database/sql/driver"
 	"errors"
+	"fmt"
+	"io"
 	"time"
 )
 
@@ -25,4 +27,12 @@ func (t *Time) Scan(src any) error {
 		return t.UnmarshalText([]byte(x))
 	}
 	return errors.New("time: source value must be a string or integer")
+}
+
+func (t *Time) UnmarshalGQL(v any) error {
+	return t.Scan(v)
+}
+
+func (t Time) MarshalGQL(w io.Writer) {
+	w.Write(fmt.Append(nil, t.Unix()))
 }

@@ -3,6 +3,8 @@ package types
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"io"
+	"strconv"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -53,4 +55,12 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return id.UnmarshalText([]byte(s))
+}
+
+func (id *ID) UnmarshalGQL(v any) error {
+	return id.Scan(v)
+}
+
+func (id ID) MarshalGQL(w io.Writer) {
+	w.Write([]byte(strconv.Quote(id.String())))
 }
