@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { Form } from "react-aria-components";
 import { ChevronLeft } from "lucide-react";
 
-import { useRegisterMutation } from "@/lib/client";
+import { useCreateAccountMutation } from "@/lib/graphql";
 
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -17,39 +17,30 @@ export default function AuthRegisterPage() {
 	const [password, setPassword] = useState("");
 	const [fullname, setFullname] = useState("");
 
-	const mutationRegister = useRegisterMutation();
+	const [, createAccount] = useCreateAccountMutation();
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		mutationRegister.mutate(
-			{
-				email,
-				password,
-				fullname,
-			},
-			{
-				onSuccess: () => {
-					toasts.add(
-						{
-							title: "Register Success",
-							description: "Welcome to Finawise!",
-							variant: "success",
-						},
-						{ timeout: 3000 },
-					);
-					navigate("/login");
-				},
-				onError: ({ message }) =>
-					toasts.add(
-						{
-							title: "Register Failed",
-							description: message,
-							variant: "destructive",
-						},
-						{ timeout: 3000 },
-					),
-			},
-		);
+		createAccount({
+			email,
+			password,
+			fullname,
+		}).then(({ error }) => {
+			if (error)
+				toasts.add({
+					title: "Register Failed",
+					description: error.message,
+					variant: "destructive",
+				});
+			else {
+				toasts.add({
+					title: "Register Success",
+					description: "Welcome to Finawise!",
+					variant: "success",
+				});
+				navigate("/login");
+			}
+		});
 	};
 
 	return (

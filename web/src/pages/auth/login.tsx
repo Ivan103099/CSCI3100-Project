@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Form } from "react-aria-components";
 
-import { useLoginMutation } from "@/lib/client";
+import { useLoginRequest } from "@/lib/client";
 
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -15,25 +15,19 @@ export default function AuthLoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
-	const mutationLogin = useLoginMutation();
+	const requestLogin = useLoginRequest();
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		mutationLogin.mutate(
-			{ email, password },
-			{
-				onSuccess: () => navigate("/"),
-				onError: ({ message }) =>
-					toasts.add(
-						{
-							title: "Login Failed",
-							description: message,
-							variant: "destructive",
-						},
-						{ timeout: 3000 },
-					),
-			},
-		);
+		requestLogin({ email, password })
+			.then(() => navigate("/"))
+			.catch(({ message }) =>
+				toasts.add({
+					title: "Login Failed",
+					description: message,
+					variant: "destructive",
+				}),
+			);
 	};
 
 	return (
