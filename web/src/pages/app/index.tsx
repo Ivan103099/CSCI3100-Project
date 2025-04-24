@@ -11,13 +11,13 @@ import {
 	PiggyBank,
 } from "lucide-react";
 
+import type { AccountSummary } from "@/lib/models";
+import { $account } from "@/lib/client";
 import {
-	$account,
-	type AccountSummary,
 	useAccountSummaryQuery,
 	useCategoriesQuery,
 	useTransactionsQuery,
-} from "@/lib/client";
+} from "@/lib/graphql";
 
 import Card from "@/components/Card";
 import Avatar from "@/components/Avatar";
@@ -54,31 +54,33 @@ const SummaryCards = () => {
 		},
 	};
 
-	const querySummary = useAccountSummaryQuery();
+	const [query] = useAccountSummaryQuery();
 
-	if (!querySummary.isSuccess) {
+	if (query.error) {
 		return <></>;
 	}
 	return (
 		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			{Object.entries(querySummary.data).map(([key, value]) => {
-				const { title, border, Icon } = PROPS[key as keyof AccountSummary];
-				return (
-					<Card
-						key={key}
-						className={`border-t-4 ${border} bg-gradient-to-br transition-all hover:shadow-lg hover:-translate-y-1 from-card to-background`}
-					>
-						<Card.Header className="flex-row items-center justify-between space-y-0 pb-2">
-							<Card.Title className="text-md font-medium">{title}</Card.Title>
-							{Icon}
-						</Card.Header>
-						<Card.Content>
-							<p className="text-2xl font-bold">${value as number}</p>
-							<p className="text-sm text-muted-foreground">{""}</p>
-						</Card.Content>
-					</Card>
-				);
-			})}
+			{Object.entries(query.data?.account.summary || {})
+				.filter(([key]) => key in PROPS)
+				.map(([key, value]) => {
+					const { title, border, Icon } = PROPS[key as keyof AccountSummary];
+					return (
+						<Card
+							key={key}
+							className={`border-t-4 ${border} bg-gradient-to-br transition-all hover:shadow-lg hover:-translate-y-1 from-card to-background`}
+						>
+							<Card.Header className="flex-row items-center justify-between space-y-0 pb-2">
+								<Card.Title className="text-md font-medium">{title}</Card.Title>
+								{Icon}
+							</Card.Header>
+							<Card.Content>
+								<p className="text-2xl font-bold">${value}</p>
+								<p className="text-sm text-muted-foreground">{""}</p>
+							</Card.Content>
+						</Card>
+					);
+				})}
 		</div>
 	);
 };
@@ -86,10 +88,9 @@ const SummaryCards = () => {
 const RecentTransactions = () => {
 	const navigate = useNavigate();
 
-	const queryCategories = useCategoriesQuery();
-	const queryTransactions = useTransactionsQuery();
+	const [query] = useTransactionsQuery();
 
-	if (!queryCategories.isSuccess || !queryTransactions.isSuccess) {
+	if (query.error) {
 		return <></>;
 	}
 	return (
@@ -97,12 +98,13 @@ const RecentTransactions = () => {
 			<Card.Header>
 				<Card.Title>Recent Transactions</Card.Title>
 				<Card.Description>
-					You made {queryTransactions.data.length} transactions this month.
+					You made {query.data?.transactions.length ?? 0} transactions this
+					month.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content className="flex flex-col divide-y divide-border">
-				{queryTransactions.data.slice(0, 5).map((item) => {
-					const type = queryCategories.data[item.cid].type;
+				{query.data?.transactions.slice(0, 5).map((item) => {
+					const type = item.category.type;
 					const color = type === "income" ? "text-green-500" : "text-red-500";
 					return (
 						<li key={item.id} className="flex items-center w-full py-4">
@@ -146,39 +148,27 @@ const ExpenseBreakdown = () => {
 		"var(--color-yellow-600)",
 	];
 
-	const queryCategories = useCategoriesQuery();
-	const queryTransactions = useTransactionsQuery();
-
-	const categories = React.useMemo(
-		() =>
-			Object.entries(queryCategories.data ?? {}).filter(
-				([_, { type }]) => type === "expense",
-			),
-		[queryCategories],
-	);
+	const [query] = useCategoriesQuery("expense");
 
 	const chart = React.useMemo(() => {
-		return categories.reduce(
-			(result, [_, cat]) => {
+		return (query.data?.categories ?? []).reduce(
+			(result, cat) => {
 				result[cat.name] = { label: cat.name };
 				return result;
 			},
 			{} as Record<string, { label: string }>,
 		);
-	}, [categories]);
+	}, [query.data]);
 
-	const data = React.useMemo(() => {
-		if (!queryTransactions.isSuccess) {
-			return [];
-		}
-		return categories.map(([cid, cat], i) => ({
-			category: cat.name,
-			amount: queryTransactions.data
-				.filter((item) => item.cid === cid)
-				.reduce((acc, item) => acc + item.amount, 0),
-			fill: COLORS[i % COLORS.length],
-		}));
-	}, [categories, queryTransactions]);
+	const data = React.useMemo(
+		() =>
+			(query.data?.categories ?? []).map((cat, i) => ({
+				fill: COLORS[i % COLORS.length],
+				category: cat.name,
+				amount: cat.transactions.reduce((acc, item) => acc + item.amount, 0),
+			})),
+		[query.data],
+	);
 
 	const most = React.useMemo(
 		() =>
@@ -188,7 +178,7 @@ const ExpenseBreakdown = () => {
 		[data],
 	);
 
-	if (!queryCategories.isSuccess || !queryTransactions.isSuccess) {
+	if (query.error) {
 		return <></>;
 	}
 	return (

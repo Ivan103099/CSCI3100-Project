@@ -1,0 +1,88 @@
+directive @auth(enabled: Boolean!) on FIELD_DEFINITION
+directive @validate(tag: String!) on INPUT_FIELD_DEFINITION
+
+directive @goModel(
+	model: String
+	models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+directive @goEnum(value: String) on ENUM_VALUE
+
+enum TxnType @goModel(model: "finawise.app/server/models.TxnType") {
+	INCOME @goEnum(value: "finawise.app/server/models.TxnTypeIncome")
+	EXPENSE @goEnum(value: "finawise.app/server/models.TxnTypeExpense")
+}
+
+scalar ULID
+scalar Time
+
+type Account {
+	id: ID!
+	group: Group!
+	email: String!
+	fullname: String!
+
+	summary: AccountSummary!
+}
+
+type AccountSummary {
+	balance: Float!
+	income: Float!
+	expense: Float!
+}
+
+type Group {
+	id: ID!
+}
+
+type Category {
+	id: ULID!
+	group: Group!
+	name: String!
+	type: TxnType!
+
+	transactions: [Transaction!]!
+}
+
+type Transaction {
+	id: ULID!
+	account: Account!
+	category: Category!
+	amount: Float!
+	time: Time!
+	title: String!
+	note: String!
+}
+
+# TODO: add filters
+type Query {
+	account: Account! @auth(enabled: true)
+	category(id: ULID!): Category! @auth(enabled: true)
+	categories(tt: TxnType): [Category!]! @auth(enabled: true)
+	transaction(id: ULID!): Transaction! @auth(enabled: true)
+	transactions(tt: TxnType): [Transaction!]! @auth(enabled: true)
+}
+
+input CreateAccount {
+	email: String! @validate(tag: "required,email")
+	password: String! @validate(tag: "required,min=8,max=30")
+	fullname: String! @validate(tag: "required,max=30,printascii")
+}
+
+input CreateCategory {
+	type: TxnType! @validate(tag: "required,oneof=income expense")
+	name: String! @validate(tag: "required,max=20,printascii")
+}
+
+input CreateTransaction {
+	cid: ULID! @validate(tag: "required,ulid")
+	amount: Float! @validate(tag: "required,gt=0")
+	time: Time! @validate(tag: "required")
+	title: String! @validate(tag: "required,max=30")
+	note: String! @validate(tag: "max=100")
+}
+
+type Mutation {
+	createAccount(a: CreateAccount!): ID! @auth(enabled: false)
+	createCategory(c: CreateCategory!): ULID! @auth(enabled: true)
+	createTransaction(t: CreateTransaction!): ULID! @auth(enabled: true)
+}

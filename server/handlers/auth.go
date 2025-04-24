@@ -7,12 +7,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/tnychn/httpx"
-	"golang.org/x/crypto/bcrypt"
 
 	"finawise.app/server/config"
 	"finawise.app/server/container"
 	"finawise.app/server/handlers/middlewares"
 	"finawise.app/server/repository"
+	"finawise.app/server/services"
+	"finawise.app/server/services/account"
 )
 
 func init() {
@@ -20,14 +21,16 @@ func init() {
 }
 
 type AuthHandler struct {
-	config config.Config
-	repo   repository.Repository
+	config  config.Config
+	repo    repository.Repository
+	account *services.AccountService
 }
 
 func newAuthHandler(c *container.Container) Handler {
 	config := container.Use[config.Config](c, "config")
 	repo := container.Use[repository.Repository](c, "repository")
-	return &AuthHandler{config: config, repo: repo}
+	account := container.Use[*services.AccountService](c, "service/account")
+	return &AuthHandler{config: config, repo: repo, account: account}
 }
 
 func (h *AuthHandler) Mount(router *mux.Router) {
@@ -47,19 +50,15 @@ func (h *AuthHandler) handleLogin() httpx.HandlerFunc {
 			return err
 		}
 
-		account, err := h.repo.FindAccountByEmail(params.Email)
+		a, err := h.account.Login(params.Email, params.Password)
 		if err != nil {
-			if err == repository.ErrNoRows {
-				return res.Status(http.StatusNotFound).String("account not found")
+			if err == account.ErrNotFound {
+				return res.Status(http.StatusUnauthorized).String("account not found")
+			}
+			if err == account.ErrPassword {
+				return res.Status(http.StatusUnauthorized).String("incorrect password")
 			}
 			return err
-		}
-
-		if err = bcrypt.CompareHashAndPassword(
-			[]byte(account.Passhash),
-			[]byte(params.Password),
-		); err != nil {
-			return httpx.ErrUnauthorized.WithError(err)
 		}
 
 		now := time.Now()
@@ -69,27 +68,30 @@ func (h *AuthHandler) handleLogin() httpx.HandlerFunc {
 				IssuedAt:  jwt.NewNumericDate(now),
 				ExpiresAt: jwt.NewNumericDate(expire),
 			},
-			Session: middlewares.Session{
-				AccountID: account.ID,
-				GroupID:   account.GroupID,
+			Session: account.Session{
+				AccountID: a.ID,
+				GroupID:   a.GroupID,
 			},
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		sign, err := token.SignedString([]byte(h.config.Secret))
+		signed, err := token.SignedString([]byte(h.config.Secret))
 		if err != nil {
-			return err
+			return httpx.WrapHTTPError(err,
+				http.StatusUnprocessableEntity,
+				"failed to sign token",
+			)
 		}
 
 		res.SetCookie(&http.Cookie{
 			Name:     "token",
-			Value:    sign,
+			Value:    signed,
 			Path:     "/",
 			Expires:  expire.Add(1 * time.Minute),
 			Secure:   req.IsTLS(),
 			HttpOnly: true,
 		})
-		return res.Status(http.StatusOK).JSON(account, "")
+		return res.Status(http.StatusOK).JSON(a, "")
 	}
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -16,6 +17,7 @@ import (
 	"finawise.app/server/handlers"
 	"finawise.app/server/handlers/middlewares"
 	"finawise.app/server/repository"
+	"finawise.app/server/services"
 )
 
 // TODO: use log/slog instead of zerolog
@@ -37,7 +39,10 @@ func (rb *RequestBinder) Bind(req *httpx.Request, v any) error {
 	if err := rb.validate.Struct(v); err != nil {
 		var e validator.ValidationErrors
 		if errors.As(err, &e) {
-			return httpx.ErrBadRequest.WithError(err)
+			return httpx.ErrBadRequest.WithError(
+				fmt.Errorf("invalid value for '%s': constraint '%s' failed",
+					e[0].Field(), e[0].Tag()),
+			)
 		}
 		return err
 	}
@@ -69,7 +74,6 @@ func main() {
 	router := mux.NewRouter()
 
 	router.Use(middlewares.CORS(*debug))
-	router.Use(middlewares.Logging(*debug))
 	router.Use(func(handler http.Handler) http.Handler {
 		return http.MaxBytesHandler(handler, HTTPMaxBytes)
 	})
@@ -84,10 +88,13 @@ func main() {
 		return httpx.ErrMethodNotAllowed
 	})
 
+	repo := repository.New(config)
 	c := container.New(container.Dependencies{
 		"config":     config,
-		"repository": repository.New(config),
+		"repository": repo,
 	})
+	container.Set(c, "debug", *debug)
+	container.Provide(c, "service/account", services.NewAccountService)
 
 	r := router.PathPrefix("/api").Subrouter()
 	for _, provider := range handlers.Handlers {

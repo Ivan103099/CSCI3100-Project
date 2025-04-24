@@ -8,10 +8,10 @@ import {
 	useHref,
 	type NavigateOptions,
 } from "react-router";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { Provider } from "urql";
 import { RouterProvider } from "react-aria-components";
 
-import { client } from "@/lib/client";
+import { client } from "@/lib/graphql";
 
 import Toast from "./components/Toast";
 import { AuthLayout, AuthLoginPage, AuthRegisterPage } from "./pages/auth";
@@ -28,7 +28,7 @@ const App = () => {
 	return (
 		<>
 			<Toast />
-			<QueryClientProvider client={client}>
+			<Provider value={client}>
 				<RouterProvider navigate={navigate} useHref={useHref}>
 					<Routes>
 						<Route element={<AppLayout />}>
@@ -43,7 +43,7 @@ const App = () => {
 						</Route>
 					</Routes>
 				</RouterProvider>
-			</QueryClientProvider>
+			</Provider>
 		</>
 	);
 };

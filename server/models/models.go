@@ -25,7 +25,7 @@ type AccountSummary struct {
 }
 
 type Group struct {
-	ID int64 `db:"id"`
+	ID int64 `db:"id" json:"id"`
 }
 
 type Category struct {
