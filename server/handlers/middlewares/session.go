@@ -10,12 +10,12 @@ import (
 	"finawise.app/server/services/account"
 )
 
-type AuthTokenClaims struct {
+type SessionTokenClaims struct {
 	account.Session
 	jwt.RegisteredClaims
 }
 
-func Auth(secret string, guard bool) mux.MiddlewareFunc {
+func Session(secret string) mux.MiddlewareFunc {
 	keyfunc := func(_ *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	}
@@ -26,21 +26,18 @@ func Auth(secret string, guard bool) mux.MiddlewareFunc {
 				if err != http.ErrNoCookie {
 					return err // should be unreachable
 				}
-				if !guard {
-					return httpx.H(next)(req, res)
-				}
-				return httpx.ErrUnauthorized
+				return httpx.H(next)(req, res)
 			}
 			if err := cookie.Valid(); err != nil {
-				return httpx.ErrBadRequest.WithError(err)
+				return httpx.H(next)(req, res)
 			}
-			token, err := jwt.ParseWithClaims(cookie.Value, new(AuthTokenClaims), keyfunc)
+			token, err := jwt.ParseWithClaims(cookie.Value, new(SessionTokenClaims), keyfunc)
 			if err != nil || !token.Valid {
-				return httpx.ErrBadRequest.WithError(err)
+				return httpx.H(next)(req, res)
 			}
-			claims, ok := token.Claims.(*AuthTokenClaims)
+			claims, ok := token.Claims.(*SessionTokenClaims)
 			if !ok {
-				return httpx.ErrBadRequest
+				return httpx.H(next)(req, res)
 			}
 			req.SetValue("session", claims.Session)
 			return httpx.H(next)(req, res)

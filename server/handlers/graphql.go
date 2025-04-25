@@ -103,6 +103,6 @@ func (h *GraphQLHandler) Mount(router *mux.Router) {
 	})
 
 	r := router.PathPrefix("/graphql").Subrouter()
-	r.Handle("", middlewares.Auth(h.config.Secret, false)(handler))
+	r.Handle("", middlewares.Session(h.config.Secret)(handler))
 	r.Handle("/playground", playground.Handler("", "/api/graphql"))
 }

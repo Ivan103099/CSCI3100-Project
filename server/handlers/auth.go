@@ -35,6 +35,7 @@ func newAuthHandler(c *container.Container) Handler {
 
 func (h *AuthHandler) Mount(router *mux.Router) {
 	r := router.PathPrefix("/auth").Subrouter()
+	r.Use(middlewares.Session(h.config.Secret))
 	r.Handle("/login", h.handleLogin()).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/logout", h.handleLogout()).Methods(http.MethodPost, http.MethodOptions)
 }
@@ -61,9 +62,16 @@ func (h *AuthHandler) handleLogin() httpx.HandlerFunc {
 			return err
 		}
 
+		// prevent unnecessary token generation if already logged in
+		if session, ok := req.GetValue("session").(account.Session); ok {
+			if session.AccountID == a.ID {
+				return res.Status(http.StatusOK).JSON(a, "")
+			}
+		}
+
 		now := time.Now()
 		expire := now.AddDate(0, 1, 0) // 1 month
-		claims := &middlewares.AuthTokenClaims{
+		claims := &middlewares.SessionTokenClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				IssuedAt:  jwt.NewNumericDate(now),
 				ExpiresAt: jwt.NewNumericDate(expire),
