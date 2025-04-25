@@ -1,5 +1,8 @@
 import React from "react";
-import { Beef, Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
+import { Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
+
+import type { TxnType } from "@/lib/models";
+import { useCategoriesQuery } from "@/lib/graphql";
 
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -8,8 +11,21 @@ import Tabs from "@/components/Tabs";
 import SearchField from "@/components/SearchField";
 
 export default function AppCategoriesPage() {
-	const [tab, setTab] = React.useState("all");
+	const [tab, setTab] = React.useState("ALL");
 	const [search, setSearch] = React.useState("");
+
+	const [query] = useCategoriesQuery(
+		tab === "ALL" ? undefined : (tab as TxnType),
+	);
+
+	const categories = React.useMemo(
+		() =>
+			(query.data?.categories ?? []).filter((category) => {
+				if (!search) return true;
+				return category.name.toLowerCase().includes(search.toLowerCase());
+			}),
+		[query.data, search],
+	);
 
 	return (
 		<main className="flex-1 p-4 md:p-8 space-y-4">
@@ -37,54 +53,60 @@ export default function AppCategoriesPage() {
 				onSelectionChange={(key) => setTab(key.toString())}
 			>
 				<Tabs.Nav className="self-start">
-					<Tabs.NavItem id="all">All</Tabs.NavItem>
-					<Tabs.NavItem id="expense">Expense</Tabs.NavItem>
-					<Tabs.NavItem id="income">Income</Tabs.NavItem>
+					<Tabs.NavItem id="ALL">All</Tabs.NavItem>
+					<Tabs.NavItem id="EXPENSE">Expense</Tabs.NavItem>
+					<Tabs.NavItem id="INCOME">Income</Tabs.NavItem>
 				</Tabs.Nav>
 				<Tabs.Content
 					id={tab}
 					className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
 				>
-					<Card className="transition-all hover:shadow-lg hover:-translate-y-1">
-						<Card.Content className="p-6">
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500">
-										<Beef className="size-5 text-white" />
+					{categories.map((category) => (
+						<Card
+							key={category.id}
+							className="transition-all hover:shadow-lg hover:-translate-y-1"
+						>
+							<Card.Content className="p-6">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-3">
+										<p className="flex items-center justify-center h-10 w-10 rounded-xl text-xl bg-blue-200">
+											{"🍖"}
+										</p>
+										<p className="text-xl font-medium">{category.name}</p>
 									</div>
-									<div>
-										<p className="text-xl font-medium">Food</p>
-										<p className="text-sm text-muted-foreground">Hello World</p>
-									</div>
+									<Menu.Trigger>
+										<Button variant="ghost" className="p-2 h-5">
+											<MoreHorizontal className="size-4" />
+										</Button>
+										<Menu.Popover className="min-w-28">
+											<Menu className="space-y-0">
+												<Menu.Item onAction={() => ({})}>
+													<Edit className="size-4" />
+													Edit
+												</Menu.Item>
+												<Menu.Separator />
+												<Menu.Item
+													onAction={() => ({})}
+													className="font-medium text-rose-500 focus:text-rose-500"
+												>
+													<Trash className="size-4" />
+													Delete
+												</Menu.Item>
+											</Menu>
+										</Menu.Popover>
+									</Menu.Trigger>
 								</div>
-								<Menu.Trigger>
-									<Button variant="ghost" className="p-2 h-5">
-										<MoreHorizontal className="size-4" />
-									</Button>
-									<Menu.Popover className="min-w-28">
-										<Menu className="space-y-0">
-											<Menu.Item onAction={() => ({})}>
-												<Edit className="size-4" />
-												Edit
-											</Menu.Item>
-											<Menu.Separator />
-											<Menu.Item
-												onAction={() => ({})}
-												className="font-medium text-rose-500 focus:text-rose-500"
-											>
-												<Trash className="size-4" />
-												Delete
-											</Menu.Item>
-										</Menu>
-									</Menu.Popover>
-								</Menu.Trigger>
-							</div>
-						</Card.Content>
-						<Card.Footer className="flex justify-between items-center py-3 rounded-b-md bg-secondary">
-							<span className="font-medium text-sm">{"14 transactions"}</span>
-							<span className="font-bold text-lg">{"$1200"}</span>
-						</Card.Footer>
-					</Card>
+							</Card.Content>
+							<Card.Footer className="flex justify-between items-center py-3 rounded-b-md bg-secondary">
+								<span className="font-medium text-sm">
+									{category.transactions.length} Transactions
+								</span>
+								<span className="font-bold text-lg">
+									${category.transactions.reduce((sum, t) => sum + t.amount, 0)}
+								</span>
+							</Card.Footer>
+						</Card>
+					))}
 				</Tabs.Content>
 			</Tabs>
 		</main>

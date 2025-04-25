@@ -57,7 +57,7 @@ const TransactionModal = () => {
 	const currentDateTime = React.useMemo(() => now(getLocalTimeZone()), []);
 
 	const init = {
-		type: "expense" as TxnType,
+		type: "EXPENSE" as TxnType,
 		category: "",
 		title: "",
 		datetime: currentDateTime,
@@ -144,8 +144,8 @@ const TransactionModal = () => {
 										setFormData({ ...form, type: key as TxnType })
 									}
 								>
-									<Select.Item id="expense">Expense</Select.Item>
-									<Select.Item id="income">Income</Select.Item>
+									<Select.Item id="EXPENSE">Expense</Select.Item>
+									<Select.Item id="INCOME">Income</Select.Item>
 								</Select>
 								<Select
 									label="Category"

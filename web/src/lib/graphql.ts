@@ -1,4 +1,3 @@
-import { getDefaultStore } from "jotai";
 import {
 	Client,
 	cacheExchange,
@@ -15,9 +14,7 @@ import type {
 	Transaction,
 	TxnType,
 } from "./models";
-import { $authed, BASE_URL } from "./client";
-
-const store = getDefaultStore();
+import { BASE_URL } from "./client";
 
 export const client = new Client({
 	url: new URL("graphql", BASE_URL).toString(),
@@ -51,7 +48,6 @@ export const useAccountSummaryQuery = () =>
         }
       }
     `,
-		pause: !store.get($authed),
 	});
 
 export const useCategoriesQuery = (tt?: TxnType) =>
@@ -75,8 +71,7 @@ export const useCategoriesQuery = (tt?: TxnType) =>
         }
       }
     `,
-		variables: { tt: tt?.toUpperCase() },
-		pause: !store.get($authed),
+		variables: { tt },
 	});
 
 export const useTransactionsQuery = (tt?: TxnType) =>
@@ -100,8 +95,7 @@ export const useTransactionsQuery = (tt?: TxnType) =>
         }
       }
     `,
-		variables: { tt: tt?.toUpperCase() },
-		pause: !store.get($authed),
+		variables: { tt },
 	});
 
 export const useCreateAccountMutation = () =>

@@ -1,4 +1,4 @@
-export type TxnType = "income" | "expense";
+export type TxnType = "INCOME" | "EXPENSE";
 
 export type Account = {
 	id: number;

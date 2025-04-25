@@ -105,7 +105,7 @@ const RecentTransactions = () => {
 			<Card.Content className="flex flex-col divide-y divide-border">
 				{query.data?.transactions.slice(0, 5).map((item) => {
 					const type = item.category.type;
-					const color = type === "income" ? "text-green-500" : "text-red-500";
+					const color = type === "INCOME" ? "text-green-500" : "text-red-500";
 					return (
 						<li key={item.id} className="flex items-center w-full py-4">
 							<Avatar>
@@ -148,7 +148,7 @@ const ExpenseBreakdown = () => {
 		"var(--color-yellow-600)",
 	];
 
-	const [query] = useCategoriesQuery("expense");
+	const [query] = useCategoriesQuery("EXPENSE");
 
 	const chart = React.useMemo(() => {
 		return (query.data?.categories ?? []).reduce(
