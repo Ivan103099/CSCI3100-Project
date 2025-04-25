@@ -70,12 +70,15 @@ const TransactionModal = () => {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		createTransaction({
-			title: form.title,
-			amount: form.amount,
-			timestamp: Math.floor(form.datetime.toDate().getTime() / 1000),
-			cid: form.category,
-		}).then(({ error, data }) => {
+		createTransaction(
+			{
+				title: form.title,
+				amount: form.amount,
+				timestamp: Math.floor(form.datetime.toDate().getTime() / 1000),
+				cid: form.category,
+			},
+			{ additionalTypenames: ["AccountSummary"] },
+		).then(({ error, data }) => {
 			if (error)
 				toasts.add({
 					title: "Transaction Create Failed",
