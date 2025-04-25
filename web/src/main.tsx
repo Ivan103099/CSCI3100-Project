@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
 import {
 	HashRouter,
@@ -8,10 +8,12 @@ import {
 	useHref,
 	type NavigateOptions,
 } from "react-router";
+import { useAtomValue } from "jotai";
 import { Provider } from "urql";
 import { RouterProvider } from "react-aria-components";
 
-import { client } from "@/lib/graphql";
+import { $authed } from "@/lib/client";
+import { createClient } from "@/lib/graphql";
 
 import Toast from "./components/Toast";
 import { AuthLayout, AuthLoginPage, AuthRegisterPage } from "./pages/auth";
@@ -25,6 +27,11 @@ declare module "react-aria-components" {
 
 const App = () => {
 	const navigate = useNavigate();
+	const authed = useAtomValue($authed);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: intentional
+	const client = React.useMemo(() => createClient(), [authed]);
+
 	return (
 		<>
 			<Toast />
@@ -52,9 +59,9 @@ const body = document.querySelector("body");
 
 // biome-ignore lint/style/noNonNullAssertion: must exist
 createRoot(body!).render(
-	<StrictMode>
+	<React.StrictMode>
 		<HashRouter>
 			<App />
 		</HashRouter>
-	</StrictMode>,
+	</React.StrictMode>,
 );

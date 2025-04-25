@@ -2,10 +2,12 @@ import {
 	Client,
 	cacheExchange,
 	fetchExchange,
+	mapExchange,
 	gql,
 	useQuery,
 	useMutation,
 } from "urql";
+import { getDefaultStore } from "jotai";
 
 import type {
 	Account,
@@ -14,13 +16,30 @@ import type {
 	Transaction,
 	TxnType,
 } from "./models";
-import { BASE_URL } from "./client";
+import { BASE_URL, $account } from "./client";
 
-export const client = new Client({
-	url: new URL("graphql", BASE_URL).toString(),
-	exchanges: [cacheExchange, fetchExchange],
-	fetchOptions: () => ({ credentials: "include" }),
-});
+const store = getDefaultStore();
+
+// TODO: recreate client when logout
+let client: Client;
+
+export const createClient = () => {
+	client = new Client({
+		url: new URL("graphql", BASE_URL).toString(),
+		exchanges: [
+			cacheExchange,
+			mapExchange({
+				onError(_error) {
+					createClient();
+					store.set($account, undefined);
+				},
+			}),
+			fetchExchange,
+		],
+		fetchOptions: () => ({ credentials: "include" }),
+	});
+	return client;
+};
 
 export const useAccountQuery = () =>
 	useQuery<{ account: Account }>({

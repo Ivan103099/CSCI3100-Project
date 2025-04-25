@@ -1,6 +1,7 @@
 import { atom, useSetAtom } from "jotai";
 
 import type { Account } from "./models";
+import { createClient } from "./graphql";
 
 export const BASE_URL = "http://localhost:6969/api/";
 
@@ -64,5 +65,8 @@ export const useLogoutRequest = () => {
 		request({
 			endpoint: "auth/logout",
 			method: "POST",
-		}).then(() => setAccount(undefined));
+		}).then(() => {
+			createClient();
+			setAccount(undefined);
+		});
 };
