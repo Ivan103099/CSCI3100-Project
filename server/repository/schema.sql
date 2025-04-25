@@ -26,9 +26,8 @@ CREATE TABLE IF NOT EXISTS "transactions" (
     "account_id" INTEGER NOT NULL,
     "category_id" TEXT NOT NULL,
     "amount" REAL NOT NULL,
-    "time" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
-    "note" TEXT NOT NULL,
+    "timestamp" INTEGER NOT NULL,
     FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );

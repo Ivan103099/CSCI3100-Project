@@ -112,10 +112,10 @@ use_function_syntax_for_execution_context: false
 #  - enterprise
 
 # Optional: set to modify the initialisms regarded for Go names
-go_initialisms:
-  replace_defaults: false # if true, the default initialisms will get dropped in favor of the new ones instead of being added
-  initialisms: # List of initialisms to for Go names
-    - "CID" # Category ID
+# go_initialisms:
+#   replace_defaults: false # if true, the default initialisms will get dropped in favor of the new ones instead of being added
+#   initialisms: # List of initialisms to for Go names
+#     - "CID" # Category ID
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
@@ -134,6 +134,6 @@ models:
   ULID:
     model:
       - "finawise.app/server/models/types.ID"
-  Time:
+  Timestamp:
     model:
-      - "finawise.app/server/models/types.Time"
+      - "finawise.app/server/models/types.Timestamp"

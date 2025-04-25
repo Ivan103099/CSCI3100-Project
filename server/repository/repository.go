@@ -117,15 +117,15 @@ func (r *repository) CreateCategory(c models.Category) (types.ID, error) {
 func (r *repository) CreateTransaction(t models.Transaction) (types.ID, error) {
 	tid := types.MakeID()
 	s, args := SQL.Insert("transactions").
-		Columns("id", "account_id", "category_id", "amount", "time", "title", "note").
-		Values(tid, t.AccountID, t.CategoryID, t.Amount, t.Time, t.Title, t.Note).
+		Columns("id", "account_id", "category_id", "amount", "timestamp", "title").
+		Values(tid, t.AccountID, t.CategoryID, t.Amount, t.Timestamp, t.Title).
 		MustSQL()
 	_, err := r.db.Exec(s, args...)
 	return tid, err
 }
 
 func (r *repository) GetGroup(gid int64) (g models.Group, err error) {
-	s, args := SQL.Select("id").
+	s, args := SQL.Select("*").
 		From("groups").
 		Where(sq.Eq{"id": gid}).
 		MustSQL()
@@ -134,7 +134,7 @@ func (r *repository) GetGroup(gid int64) (g models.Group, err error) {
 }
 
 func (r *repository) GetCategory(cid types.ID) (c models.Category, err error) {
-	s, args := SQL.Select("id", "group_id", "name", "type").
+	s, args := SQL.Select("*").
 		From("categories").
 		Where(sq.Eq{"id": cid}).
 		MustSQL()
@@ -147,7 +147,7 @@ func (r *repository) GetCategories(gid int64, tt *models.TxnType) (c []models.Ca
 	if tt != nil {
 		eq["type"] = *tt
 	}
-	s, args := SQL.Select("id", "group_id", "name", "type").
+	s, args := SQL.Select("*").
 		From("categories").
 		Where(eq).
 		MustSQL()
@@ -156,7 +156,7 @@ func (r *repository) GetCategories(gid int64, tt *models.TxnType) (c []models.Ca
 }
 
 func (r *repository) GetTransaction(tid types.ID) (t models.Transaction, err error) {
-	s, args := SQL.Select("id", "account_id", "category_id", "amount", "time", "title", "note").
+	s, args := SQL.Select("*").
 		From("transactions").
 		Where(sq.Eq{"id": tid}).
 		MustSQL()
@@ -165,6 +165,7 @@ func (r *repository) GetTransaction(tid types.ID) (t models.Transaction, err err
 }
 
 func (r *repository) GetAccount(aid int64) (a models.Account, err error) {
+	// explicitly select columns to hide passhash
 	s, args := SQL.Select("id", "group_id", "email", "fullname").
 		From("accounts").
 		Where(sq.Eq{"id": aid}).
@@ -199,10 +200,10 @@ func (r *repository) FindAccountByEmail(email string) (a models.Account, err err
 }
 
 func (r *repository) ListTransactions(aid int64, cid *types.ID, tt *models.TxnType) (results []models.Transaction, err error) {
-	b := SQL.Select("t.id", "t.account_id", "t.category_id", "t.amount", "t.time", "t.title", "t.note").
+	b := SQL.Select("t.id", "t.account_id", "t.category_id", "t.amount", "t.timestamp", "t.title").
 		Where(sq.Eq{"t.account_id": aid}).
 		From("transactions t").
-		OrderBy("t.time DESC")
+		OrderBy("t.timestamp DESC")
 	if cid != nil {
 		b = b.Where(sq.Eq{"t.category_id": cid})
 	}

@@ -94,13 +94,12 @@ type ComplexityRoot struct {
 	}
 
 	Transaction struct {
-		Account  func(childComplexity int) int
-		Amount   func(childComplexity int) int
-		Category func(childComplexity int) int
-		ID       func(childComplexity int) int
-		Note     func(childComplexity int) int
-		Time     func(childComplexity int) int
-		Title    func(childComplexity int) int
+		Account   func(childComplexity int) int
+		Amount    func(childComplexity int) int
+		Category  func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Timestamp func(childComplexity int) int
+		Title     func(childComplexity int) int
 	}
 }
 
@@ -367,19 +366,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Transaction.ID(childComplexity), true
 
-	case "Transaction.note":
-		if e.complexity.Transaction.Note == nil {
+	case "Transaction.timestamp":
+		if e.complexity.Transaction.Timestamp == nil {
 			break
 		}
 
-		return e.complexity.Transaction.Note(childComplexity), true
-
-	case "Transaction.time":
-		if e.complexity.Transaction.Time == nil {
-			break
-		}
-
-		return e.complexity.Transaction.Time(childComplexity), true
+		return e.complexity.Transaction.Timestamp(childComplexity), true
 
 	case "Transaction.title":
 		if e.complexity.Transaction.Title == nil {
@@ -1446,12 +1438,10 @@ func (ec *executionContext) fieldContext_Category_transactions(_ context.Context
 				return ec.fieldContext_Transaction_category(ctx, field)
 			case "amount":
 				return ec.fieldContext_Transaction_amount(ctx, field)
-			case "time":
-				return ec.fieldContext_Transaction_time(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "title":
 				return ec.fieldContext_Transaction_title(ctx, field)
-			case "note":
-				return ec.fieldContext_Transaction_note(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
@@ -2094,12 +2084,10 @@ func (ec *executionContext) fieldContext_Query_transaction(ctx context.Context, 
 				return ec.fieldContext_Transaction_category(ctx, field)
 			case "amount":
 				return ec.fieldContext_Transaction_amount(ctx, field)
-			case "time":
-				return ec.fieldContext_Transaction_time(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "title":
 				return ec.fieldContext_Transaction_title(ctx, field)
-			case "note":
-				return ec.fieldContext_Transaction_note(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
@@ -2192,12 +2180,10 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 				return ec.fieldContext_Transaction_category(ctx, field)
 			case "amount":
 				return ec.fieldContext_Transaction_amount(ctx, field)
-			case "time":
-				return ec.fieldContext_Transaction_time(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
 			case "title":
 				return ec.fieldContext_Transaction_title(ctx, field)
-			case "note":
-				return ec.fieldContext_Transaction_note(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
@@ -2547,8 +2533,8 @@ func (ec *executionContext) fieldContext_Transaction_amount(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Transaction_time(ctx context.Context, field graphql.CollectedField, obj *models.Transaction) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transaction_time(ctx, field)
+func (ec *executionContext) _Transaction_timestamp(ctx context.Context, field graphql.CollectedField, obj *models.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_timestamp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2561,7 +2547,7 @@ func (ec *executionContext) _Transaction_time(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Time, nil
+		return obj.Timestamp, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2573,19 +2559,19 @@ func (ec *executionContext) _Transaction_time(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(types.Time)
+	res := resTmp.(types.Timestamp)
 	fc.Result = res
-	return ec.marshalNTime2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTimestamp2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTimestamp(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transaction_time(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2623,50 +2609,6 @@ func (ec *executionContext) _Transaction_title(ctx context.Context, field graphq
 }
 
 func (ec *executionContext) fieldContext_Transaction_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Transaction",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Transaction_note(ctx context.Context, field graphql.CollectedField, obj *models.Transaction) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transaction_note(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Note, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Transaction_note(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Transaction",
 		Field:      field,
@@ -4814,7 +4756,7 @@ func (ec *executionContext) unmarshalInputCreateTransaction(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"cid", "amount", "time", "title", "note"}
+	fieldsInOrder := [...]string{"cid", "amount", "timestamp", "title"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4877,20 +4819,20 @@ func (ec *executionContext) unmarshalInputCreateTransaction(ctx context.Context,
 				err := fmt.Errorf(`unexpected type %T from directive, should be float64`, tmp)
 				return it, graphql.ErrorOnPath(ctx, err)
 			}
-		case "time":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("time"))
+		case "timestamp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
 			directive0 := func(ctx context.Context) (any, error) {
-				return ec.unmarshalNTime2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTime(ctx, v)
+				return ec.unmarshalNTimestamp2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTimestamp(ctx, v)
 			}
 
 			directive1 := func(ctx context.Context) (any, error) {
 				tag, err := ec.unmarshalNString2string(ctx, "required")
 				if err != nil {
-					var zeroVal types.Time
+					var zeroVal types.Timestamp
 					return zeroVal, err
 				}
 				if ec.directives.Validate == nil {
-					var zeroVal types.Time
+					var zeroVal types.Timestamp
 					return zeroVal, errors.New("directive validate is not implemented")
 				}
 				return ec.directives.Validate(ctx, obj, directive0, tag)
@@ -4900,10 +4842,10 @@ func (ec *executionContext) unmarshalInputCreateTransaction(ctx context.Context,
 			if err != nil {
 				return it, graphql.ErrorOnPath(ctx, err)
 			}
-			if data, ok := tmp.(types.Time); ok {
-				it.Time = data
+			if data, ok := tmp.(types.Timestamp); ok {
+				it.Timestamp = data
 			} else {
-				err := fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models/types.Time`, tmp)
+				err := fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models/types.Timestamp`, tmp)
 				return it, graphql.ErrorOnPath(ctx, err)
 			}
 		case "title":
@@ -4929,33 +4871,6 @@ func (ec *executionContext) unmarshalInputCreateTransaction(ctx context.Context,
 			}
 			if data, ok := tmp.(string); ok {
 				it.Title = data
-			} else {
-				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-		case "note":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("note"))
-			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
-
-			directive1 := func(ctx context.Context) (any, error) {
-				tag, err := ec.unmarshalNString2string(ctx, "max=100")
-				if err != nil {
-					var zeroVal string
-					return zeroVal, err
-				}
-				if ec.directives.Validate == nil {
-					var zeroVal string
-					return zeroVal, errors.New("directive validate is not implemented")
-				}
-				return ec.directives.Validate(ctx, obj, directive0, tag)
-			}
-
-			tmp, err := directive1(ctx)
-			if err != nil {
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-			if data, ok := tmp.(string); ok {
-				it.Note = data
 			} else {
 				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 				return it, graphql.ErrorOnPath(ctx, err)
@@ -5620,18 +5535,13 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "time":
-			out.Values[i] = ec._Transaction_time(ctx, field, obj)
+		case "timestamp":
+			out.Values[i] = ec._Transaction_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "title":
 			out.Values[i] = ec._Transaction_title(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "note":
-			out.Values[i] = ec._Transaction_note(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -6128,13 +6038,13 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNTime2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTime(ctx context.Context, v any) (types.Time, error) {
-	var res types.Time
+func (ec *executionContext) unmarshalNTimestamp2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTimestamp(ctx context.Context, v any) (types.Timestamp, error) {
+	var res types.Timestamp
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTime2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTime(ctx context.Context, sel ast.SelectionSet, v types.Time) graphql.Marshaler {
+func (ec *executionContext) marshalNTimestamp2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐTimestamp(ctx context.Context, sel ast.SelectionSet, v types.Timestamp) graphql.Marshaler {
 	return v
 }
 

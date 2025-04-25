@@ -114,7 +114,7 @@ const RecentTransactions = () => {
 							<div className="ml-4 space-y-1">
 								<p className="text-sm font-medium leading-none">{item.title}</p>
 								<p className="text-sm text-muted-foreground">
-									{new Date(item.time).toLocaleString("en-GB")}
+									{new Date(item.timestamp * 1000).toLocaleString("en-GB")}
 								</p>
 							</div>
 							<div className={`ml-auto font-medium ${color}`}>

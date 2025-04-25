@@ -55,9 +55,8 @@ func (r *mutationResolver) CreateTransaction(ctx context.Context, t CreateTransa
 		AccountID:  session.AccountID,
 		CategoryID: t.CID,
 		Amount:     t.Amount,
-		Time:       t.Time,
+		Timestamp:  t.Timestamp,
 		Title:      t.Title,
-		Note:       t.Note,
 	})
 }
 

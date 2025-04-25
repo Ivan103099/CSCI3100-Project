@@ -70,7 +70,7 @@ export const useCategoriesQuery = (tt?: TxnType) =>
             id
             title
             amount
-            time
+            timestamp
           }
         }
       }
@@ -91,7 +91,7 @@ export const useTransactionsQuery = (tt?: TxnType) =>
           id
           title
           amount
-          time
+          timestamp
           category {
             id
             name
@@ -117,13 +117,12 @@ export const useCreateAccountMutation = () =>
 
 export const useCreateTransactionMutation = () =>
 	useMutation<{ createTransaction: string }>(gql`
-    mutation ($cid: ULID!, $amount: Float!, $time: Time!, $title: String!, $note: String!) {
+    mutation ($cid: ULID!, $amount: Float!, $timestamp: Timestamp!, $title: String!) {
       createTransaction(t: {
         cid: $cid
         amount: $amount
-        time: $time
+        timestamp: $timestamp
         title: $title
-        note: $note
       })
     }
   `);

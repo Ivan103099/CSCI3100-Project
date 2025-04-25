@@ -17,9 +17,8 @@ export type Transaction = {
 	id: string;
 	cid: string;
 	title: string;
-	note?: string;
 	amount: number;
-	time: number;
+	timestamp: number;
 };
 
 export type AccountSummary = {

@@ -19,11 +19,10 @@ type CreateCategory struct {
 }
 
 type CreateTransaction struct {
-	CID    types.ID   `json:"cid"`
-	Amount float64    `json:"amount"`
-	Time   types.Time `json:"time"`
-	Title  string     `json:"title"`
-	Note   string     `json:"note"`
+	CID       types.ID        `json:"cid"`
+	Amount    float64         `json:"amount"`
+	Timestamp types.Timestamp `json:"timestamp"`
+	Title     string          `json:"title"`
 }
 
 type Mutation struct {

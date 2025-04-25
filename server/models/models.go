@@ -36,11 +36,10 @@ type Category struct {
 }
 
 type Transaction struct {
-	ID         types.ID   `db:"id" json:"id"`
-	AccountID  int64      `db:"account_id" json:"aid"`
-	CategoryID types.ID   `db:"category_id" json:"cid"`
-	Amount     float64    `db:"amount" json:"amount"`
-	Time       types.Time `db:"time" json:"time"`
-	Title      string     `db:"title" json:"title"`
-	Note       string     `db:"note" json:"note"`
+	ID         types.ID        `db:"id" json:"id"`
+	AccountID  int64           `db:"account_id" json:"aid"`
+	CategoryID types.ID        `db:"category_id" json:"cid"`
+	Amount     float64         `db:"amount" json:"amount"`
+	Timestamp  types.Timestamp `db:"timestamp" json:"timestamp"`
+	Title      string          `db:"title" json:"title"`
 }

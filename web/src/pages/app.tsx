@@ -59,9 +59,8 @@ const TransactionModal = () => {
 	const init = {
 		type: "expense" as TxnType,
 		category: "",
-		title: "" as string,
-		note: "" as string | undefined,
-		time: currentDateTime,
+		title: "",
+		datetime: currentDateTime,
 		amount: 0,
 	};
 	const [form, setFormData] = React.useState(init);
@@ -73,9 +72,8 @@ const TransactionModal = () => {
 		e.preventDefault();
 		createTransaction({
 			title: form.title,
-			note: form.note ?? "",
 			amount: form.amount,
-			time: form.time.toDate(),
+			timestamp: Math.floor(form.datetime.toDate().getTime() / 1000),
 			cid: form.category,
 		}).then(({ error, data }) => {
 			if (error)
@@ -175,7 +173,7 @@ const TransactionModal = () => {
 									onChange={(value) => setFormData({ ...form, title: value })}
 								/>
 								<DatePicker
-									label="Time"
+									label="Date Time"
 									className="col-span-4"
 									granularity="minute"
 									hideTimeZone
@@ -185,18 +183,12 @@ const TransactionModal = () => {
 										minute: 0,
 									})}
 									maxValue={currentDateTime}
-									value={form.time}
+									value={form.datetime}
 									onChange={(value) =>
-										value && setFormData({ ...form, time: value })
+										value && setFormData({ ...form, datetime: value })
 									}
 								/>
 							</div>
-							<TextField
-								label="Optional Note"
-								className="w-full"
-								value={form.note}
-								onChange={(value) => setFormData({ ...form, note: value })}
-							/>
 						</Form>
 						<Modal.Footer>
 							<Button onPress={close} type="button" variant="outline">
