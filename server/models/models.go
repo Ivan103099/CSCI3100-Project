@@ -5,8 +5,8 @@ import "finawise.app/server/models/types"
 type TxnType string
 
 const (
-	TxnTypeIncome  TxnType = "income"
-	TxnTypeExpense TxnType = "expense"
+	TxnTypeIncome  TxnType = "INCOME"
+	TxnTypeExpense TxnType = "EXPENSE"
 )
 
 type Account struct {

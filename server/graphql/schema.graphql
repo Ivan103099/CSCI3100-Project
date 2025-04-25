@@ -77,7 +77,7 @@ input CreateAccount {
 }
 
 input CreateCategory {
-	type: TxnType! @validate(tag: "required,oneof=income expense")
+	type: TxnType! @validate(tag: "required,oneof=INCOME EXPENSE")
 	name: String! @validate(tag: "required,max=20,printascii")
 }
 

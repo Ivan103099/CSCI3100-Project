@@ -4694,7 +4694,7 @@ func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, ob
 			}
 
 			directive1 := func(ctx context.Context) (any, error) {
-				tag, err := ec.unmarshalNString2string(ctx, "required,oneof=income expense")
+				tag, err := ec.unmarshalNString2string(ctx, "required,oneof=INCOME EXPENSE")
 				if err != nil {
 					var zeroVal models.TxnType
 					return zeroVal, err

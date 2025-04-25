@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "categories" (
     "id" TEXT PRIMARY KEY,
     "group_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "type" TEXT NOT NULL CHECK ("type" IN ("income", "expense")),
+    "type" TEXT NOT NULL CHECK ("type" IN ("INCOME", "EXPENSE")),
     UNIQUE ("group_id", "name", "type"),
     FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE ON UPDATE CASCADE
     FOREIGN KEY ("type") REFERENCES "TYPE"("name") ON DELETE CASCADE ON UPDATE CASCADE
@@ -30,9 +30,4 @@ CREATE TABLE IF NOT EXISTS "transactions" (
     "timestamp" INTEGER NOT NULL,
     FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "TYPE" (
-    "name" TEXT PRIMARY KEY,
-    CHECK ("name" IN ("income", "expense"))
 );

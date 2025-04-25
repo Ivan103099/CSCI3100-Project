@@ -176,10 +176,10 @@ func (r *repository) GetAccount(aid int64) (a models.Account, err error) {
 
 func (r *repository) GetAccountSummary(aid int64) (as models.AccountSummary, err error) {
 	s, args := SQL.Select(
-		`IFNULL(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END)
-			- SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS balance`,
-		`IFNULL(SUM(CASE WHEN c.type = 'income' THEN t.amount ELSE 0 END), 0) AS income`,
-		`IFNULL(SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense`,
+		`IFNULL(SUM(CASE WHEN c.type = 'INCOME' THEN t.amount ELSE 0 END)
+			- SUM(CASE WHEN c.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) AS balance`,
+		`IFNULL(SUM(CASE WHEN c.type = 'INCOME' THEN t.amount ELSE 0 END), 0) AS income`,
+		`IFNULL(SUM(CASE WHEN c.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) AS expense`,
 		`0 as budget`,
 	).
 		From("transactions t").
