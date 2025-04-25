@@ -99,24 +99,28 @@ export const useTransactionsQuery = (tt?: TxnType) =>
 	});
 
 export const useCreateAccountMutation = () =>
-	useMutation<{ createAccount: number }>(gql`
+	useMutation<{ createAccount: { id: number } }>(gql`
     mutation ($email: String!, $password: String!, $fullname: String!) {
       createAccount(a: {
         email: $email
         password: $password
         fullname: $fullname
-      })
+      }) {
+        id
+      }
     }
   `);
 
 export const useCreateTransactionMutation = () =>
-	useMutation<{ createTransaction: string }>(gql`
+	useMutation<{ createTransaction: { id: string } }>(gql`
     mutation ($cid: ULID!, $amount: Float!, $timestamp: Timestamp!, $title: String!) {
       createTransaction(t: {
         cid: $cid
         amount: $amount
         timestamp: $timestamp
         title: $title
-      })
+      }) {
+        id
+      }
     }
   `);

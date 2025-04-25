@@ -114,9 +114,9 @@ type CategoryResolver interface {
 	Transactions(ctx context.Context, obj *models.Category) ([]models.Transaction, error)
 }
 type MutationResolver interface {
-	CreateAccount(ctx context.Context, a CreateAccount) (int64, error)
-	CreateCategory(ctx context.Context, c CreateCategory) (types.ID, error)
-	CreateTransaction(ctx context.Context, t CreateTransaction) (types.ID, error)
+	CreateAccount(ctx context.Context, a CreateAccount) (models.Account, error)
+	CreateCategory(ctx context.Context, c CreateCategory) (models.Category, error)
+	CreateTransaction(ctx context.Context, t CreateTransaction) (models.Transaction, error)
 }
 type QueryResolver interface {
 	Account(ctx context.Context) (models.Account, error)
@@ -1514,11 +1514,11 @@ func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field g
 		directive1 := func(ctx context.Context) (any, error) {
 			enabled, err := ec.unmarshalNBoolean2bool(ctx, false)
 			if err != nil {
-				var zeroVal int64
+				var zeroVal models.Account
 				return zeroVal, err
 			}
 			if ec.directives.Auth == nil {
-				var zeroVal int64
+				var zeroVal models.Account
 				return zeroVal, errors.New("directive auth is not implemented")
 			}
 			return ec.directives.Auth(ctx, nil, directive0, enabled)
@@ -1531,10 +1531,10 @@ func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field g
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(int64); ok {
+		if data, ok := tmp.(models.Account); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be int64`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Account`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1546,9 +1546,9 @@ func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int64)
+	res := resTmp.(models.Account)
 	fc.Result = res
-	return ec.marshalNID2int64(ctx, field.Selections, res)
+	return ec.marshalNAccount2finawiseᚗappᚋserverᚋmodelsᚐAccount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createAccount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1558,7 +1558,19 @@ func (ec *executionContext) fieldContext_Mutation_createAccount(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Account_id(ctx, field)
+			case "group":
+				return ec.fieldContext_Account_group(ctx, field)
+			case "email":
+				return ec.fieldContext_Account_email(ctx, field)
+			case "fullname":
+				return ec.fieldContext_Account_fullname(ctx, field)
+			case "summary":
+				return ec.fieldContext_Account_summary(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
 		},
 	}
 	defer func() {
@@ -1596,11 +1608,11 @@ func (ec *executionContext) _Mutation_createCategory(ctx context.Context, field 
 		directive1 := func(ctx context.Context) (any, error) {
 			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
 			if err != nil {
-				var zeroVal types.ID
+				var zeroVal models.Category
 				return zeroVal, err
 			}
 			if ec.directives.Auth == nil {
-				var zeroVal types.ID
+				var zeroVal models.Category
 				return zeroVal, errors.New("directive auth is not implemented")
 			}
 			return ec.directives.Auth(ctx, nil, directive0, enabled)
@@ -1613,10 +1625,10 @@ func (ec *executionContext) _Mutation_createCategory(ctx context.Context, field 
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(types.ID); ok {
+		if data, ok := tmp.(models.Category); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models/types.ID`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Category`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1628,9 +1640,9 @@ func (ec *executionContext) _Mutation_createCategory(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(types.ID)
+	res := resTmp.(models.Category)
 	fc.Result = res
-	return ec.marshalNULID2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐID(ctx, field.Selections, res)
+	return ec.marshalNCategory2finawiseᚗappᚋserverᚋmodelsᚐCategory(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createCategory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1640,7 +1652,19 @@ func (ec *executionContext) fieldContext_Mutation_createCategory(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ULID does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Category_id(ctx, field)
+			case "group":
+				return ec.fieldContext_Category_group(ctx, field)
+			case "name":
+				return ec.fieldContext_Category_name(ctx, field)
+			case "type":
+				return ec.fieldContext_Category_type(ctx, field)
+			case "transactions":
+				return ec.fieldContext_Category_transactions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
 		},
 	}
 	defer func() {
@@ -1678,11 +1702,11 @@ func (ec *executionContext) _Mutation_createTransaction(ctx context.Context, fie
 		directive1 := func(ctx context.Context) (any, error) {
 			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
 			if err != nil {
-				var zeroVal types.ID
+				var zeroVal models.Transaction
 				return zeroVal, err
 			}
 			if ec.directives.Auth == nil {
-				var zeroVal types.ID
+				var zeroVal models.Transaction
 				return zeroVal, errors.New("directive auth is not implemented")
 			}
 			return ec.directives.Auth(ctx, nil, directive0, enabled)
@@ -1695,10 +1719,10 @@ func (ec *executionContext) _Mutation_createTransaction(ctx context.Context, fie
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(types.ID); ok {
+		if data, ok := tmp.(models.Transaction); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models/types.ID`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Transaction`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1710,9 +1734,9 @@ func (ec *executionContext) _Mutation_createTransaction(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(types.ID)
+	res := resTmp.(models.Transaction)
 	fc.Result = res
-	return ec.marshalNULID2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐID(ctx, field.Selections, res)
+	return ec.marshalNTransaction2finawiseᚗappᚋserverᚋmodelsᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTransaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1722,7 +1746,21 @@ func (ec *executionContext) fieldContext_Mutation_createTransaction(ctx context.
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ULID does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transaction_id(ctx, field)
+			case "account":
+				return ec.fieldContext_Transaction_account(ctx, field)
+			case "category":
+				return ec.fieldContext_Transaction_category(ctx, field)
+			case "amount":
+				return ec.fieldContext_Transaction_amount(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_Transaction_timestamp(ctx, field)
+			case "title":
+				return ec.fieldContext_Transaction_title(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
 	}
 	defer func() {

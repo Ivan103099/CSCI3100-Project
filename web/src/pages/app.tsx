@@ -85,7 +85,7 @@ const TransactionModal = () => {
 			else
 				toasts.add({
 					title: "Transaction Created",
-					description: data?.createTransaction ?? "",
+					description: data?.createTransaction.id ?? "",
 					variant: "success",
 				});
 		});

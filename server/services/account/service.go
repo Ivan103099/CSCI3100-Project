@@ -20,16 +20,23 @@ func NewService(repo repository.Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Register(email, password, fullname string) (int64, error) {
+func (s *Service) Register(email, password, fullname string) (a models.Account, err error) {
 	passhash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return -1, err
+		return
 	}
-	return s.repo.CreateAccount(models.Account{
+	a = models.Account{
 		Email:    email,
 		Fullname: fullname,
 		Passhash: string(passhash),
-	})
+	}
+	id, err := s.repo.CreateAccount(a)
+	if err != nil {
+		return
+	}
+	a.ID = id
+	a.Passhash = ""
+	return
 }
 
 func (s *Service) Login(email, password string) (models.Account, error) {

@@ -34,30 +34,42 @@ func (r *categoryResolver) Transactions(ctx context.Context, obj *models.Categor
 }
 
 // CreateAccount is the resolver for the createAccount field.
-func (r *mutationResolver) CreateAccount(ctx context.Context, a CreateAccount) (int64, error) {
+func (r *mutationResolver) CreateAccount(ctx context.Context, a CreateAccount) (models.Account, error) {
 	return r.AccountService.Register(a.Email, a.Password, a.Fullname)
 }
 
 // CreateCategory is the resolver for the createCategory field.
-func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory) (types.ID, error) {
+func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory) (cat models.Category, err error) {
 	session := ctx.Value("session").(account.Session)
-	return r.Repository.CreateCategory(models.Category{
+	cat = models.Category{
 		GroupID: session.GroupID,
 		Name:    c.Name,
 		Type:    c.Type,
-	})
+	}
+	id, err := r.Repository.CreateCategory(cat)
+	if err != nil {
+		return
+	}
+	cat.ID = id
+	return
 }
 
 // CreateTransaction is the resolver for the createTransaction field.
-func (r *mutationResolver) CreateTransaction(ctx context.Context, t CreateTransaction) (types.ID, error) {
+func (r *mutationResolver) CreateTransaction(ctx context.Context, t CreateTransaction) (txn models.Transaction, err error) {
 	session := ctx.Value("session").(account.Session)
-	return r.Repository.CreateTransaction(models.Transaction{
+	txn = models.Transaction{
 		AccountID:  session.AccountID,
 		CategoryID: t.CID,
 		Amount:     t.Amount,
 		Timestamp:  t.Timestamp,
 		Title:      t.Title,
-	})
+	}
+	id, err := r.Repository.CreateTransaction(txn)
+	if err != nil {
+		return
+	}
+	txn.ID = id
+	return
 }
 
 // Account is the resolver for the account field.

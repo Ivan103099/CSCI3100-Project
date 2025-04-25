@@ -89,7 +89,7 @@ input CreateTransaction {
 }
 
 type Mutation {
-	createAccount(a: CreateAccount!): ID! @auth(enabled: false)
-	createCategory(c: CreateCategory!): ULID! @auth(enabled: true)
-	createTransaction(t: CreateTransaction!): ULID! @auth(enabled: true)
+	createAccount(a: CreateAccount!): Account! @auth(enabled: false)
+	createCategory(c: CreateCategory!): Category! @auth(enabled: true)
+	createTransaction(t: CreateTransaction!): Transaction! @auth(enabled: true)
 }
