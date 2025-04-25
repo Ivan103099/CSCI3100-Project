@@ -75,7 +75,12 @@ const SummaryCards = () => {
 								{Icon}
 							</Card.Header>
 							<Card.Content>
-								<p className="text-2xl font-bold">${value}</p>
+								<p className="text-2xl font-bold">
+									{value.toLocaleString("en-HK", {
+										style: "currency",
+										currency: "HKD",
+									})}
+								</p>
 								<p className="text-sm text-muted-foreground">{""}</p>
 							</Card.Content>
 						</Card>
@@ -107,18 +112,26 @@ const RecentTransactions = () => {
 					const type = item.category.type;
 					const color = type === "INCOME" ? "text-green-500" : "text-red-500";
 					return (
-						<li key={item.id} className="flex items-center w-full py-4">
+						<li
+							key={item.id}
+							className="flex items-center py-4 overflow-hidden"
+						>
 							<Avatar>
-								<CreditCard className="size-4" />
+								<CreditCard className="size-4 min-w-10" />
 							</Avatar>
-							<div className="ml-4 space-y-1">
-								<p className="text-sm font-medium leading-none">{item.title}</p>
+							<div className="mx-4 space-y-1 overflow-scroll">
+								<p className="text-sm text-ellipsis font-medium leading-none">
+									{item.title}
+								</p>
 								<p className="text-sm text-muted-foreground">
-									{new Date(item.timestamp * 1000).toLocaleString("en-GB")}
+									{new Date(item.timestamp * 1000).toLocaleString("en-HK")}
 								</p>
 							</div>
 							<div className={`ml-auto font-medium ${color}`}>
-								${item.amount}
+								{item.amount.toLocaleString("en-HK", {
+									style: "currency",
+									currency: "HKD",
+								})}
 							</div>
 						</li>
 					);
@@ -267,7 +280,7 @@ export default function AppDashboardPage() {
 	const currentMonthYear = React.useMemo(() => {
 		const date = new Date();
 		const year = date.getFullYear();
-		const month = date.toLocaleString("en-GB", { month: "long" });
+		const month = date.toLocaleString("en-HK", { month: "long" });
 		return { year, month };
 	}, []);
 

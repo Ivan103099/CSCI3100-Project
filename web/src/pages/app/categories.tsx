@@ -64,18 +64,21 @@ export default function AppCategoriesPage() {
 					{categories.map((category) => (
 						<Card
 							key={category.id}
-							className="transition-all hover:shadow-lg hover:-translate-y-1"
+							className="transition-all hover:shadow-lg hover:-translate-y-1 w-full"
 						>
-							<Card.Content className="p-6">
+							<Card.Content className="pt-5 relative">
 								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-3">
-										<p className="flex items-center justify-center h-10 w-10 rounded-xl text-xl bg-blue-200">
+									<div className="flex items-center gap-3 overflow-hidden mr-10">
+										<p className="flex items-center justify-center size-10 min-w-10 rounded-xl text-xl bg-blue-200">
 											{"🍖"}
 										</p>
 										<p className="text-xl font-medium">{category.name}</p>
 									</div>
 									<Menu.Trigger>
-										<Button variant="ghost" className="p-2 h-5">
+										<Button
+											variant="ghost"
+											className="absolute right-5 p-2 h-5"
+										>
 											<MoreHorizontal className="size-4" />
 										</Button>
 										<Menu.Popover className="min-w-28">
@@ -97,12 +100,17 @@ export default function AppCategoriesPage() {
 									</Menu.Trigger>
 								</div>
 							</Card.Content>
-							<Card.Footer className="flex justify-between items-center py-3 rounded-b-md bg-secondary">
-								<span className="font-medium text-sm">
+							<Card.Footer className="flex justify-between items-center gap-3 py-3 rounded-b-md bg-secondary overflow-x-scroll">
+								<span className="font-medium text-sm text-nowrap">
 									{category.transactions.length} Transactions
 								</span>
 								<span className="font-bold text-lg">
-									${category.transactions.reduce((sum, t) => sum + t.amount, 0)}
+									{category.transactions
+										.reduce((sum, t) => sum + t.amount, 0)
+										.toLocaleString("en-HK", {
+											style: "currency",
+											currency: "HKD",
+										})}
 								</span>
 							</Card.Footer>
 						</Card>
