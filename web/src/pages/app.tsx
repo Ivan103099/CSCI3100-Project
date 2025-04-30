@@ -12,7 +12,7 @@ import {
 	Plus,
 } from "lucide-react";
 
-import type { TxnType } from "@/lib/models";
+import type { CategoryType } from "@/lib/models";
 import { $account, useLogoutRequest } from "@/lib/client";
 import {
 	useAccountQuery,
@@ -57,7 +57,7 @@ const TransactionModal = () => {
 	const currentDateTime = React.useMemo(() => now(getLocalTimeZone()), []);
 
 	const init = {
-		type: "EXPENSE" as TxnType,
+		type: "EXPENSE" as CategoryType,
 		category: "",
 		title: "",
 		datetime: currentDateTime,
@@ -144,7 +144,7 @@ const TransactionModal = () => {
 									isRequired
 									selectedKey={form.type}
 									onSelectionChange={(key) =>
-										setFormData({ ...form, type: key as TxnType })
+										setFormData({ ...form, type: key as CategoryType })
 									}
 								>
 									<Select.Item id="EXPENSE">Expense</Select.Item>

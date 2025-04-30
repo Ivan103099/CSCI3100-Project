@@ -33,7 +33,7 @@ type Repository interface {
 
 	GetGroup(gid int64) (models.Group, error)
 	GetCategory(cid types.ID) (models.Category, error)
-	GetCategories(gid int64, tt *models.TxnType) ([]models.Category, error)
+	GetCategories(gid int64, ct *models.CategoryType) ([]models.Category, error)
 	GetTransaction(tid types.ID) (models.Transaction, error)
 	GetAccount(aid int64) (models.Account, error)
 	GetAccountSummary(aid int64) (as models.AccountSummary, err error)
@@ -41,7 +41,7 @@ type Repository interface {
 	FindAccountByEmail(email string) (models.Account, error)
 
 	// TODO: implement pagination
-	ListTransactions(aid int64, cid *types.ID, tt *models.TxnType) ([]models.Transaction, error)
+	ListTransactions(aid int64, cid *types.ID, ct *models.CategoryType) ([]models.Transaction, error)
 }
 
 type repository struct {
@@ -142,10 +142,10 @@ func (r *repository) GetCategory(cid types.ID) (c models.Category, err error) {
 	return
 }
 
-func (r *repository) GetCategories(gid int64, tt *models.TxnType) (c []models.Category, err error) {
+func (r *repository) GetCategories(gid int64, ct *models.CategoryType) (c []models.Category, err error) {
 	eq := sq.Eq{"group_id": gid}
-	if tt != nil {
-		eq["type"] = *tt
+	if ct != nil {
+		eq["type"] = *ct
 	}
 	s, args := SQL.Select("*").
 		From("categories").
@@ -199,7 +199,7 @@ func (r *repository) FindAccountByEmail(email string) (a models.Account, err err
 	return
 }
 
-func (r *repository) ListTransactions(aid int64, cid *types.ID, tt *models.TxnType) (results []models.Transaction, err error) {
+func (r *repository) ListTransactions(aid int64, cid *types.ID, ct *models.CategoryType) (results []models.Transaction, err error) {
 	b := SQL.Select("t.id", "t.account_id", "t.category_id", "t.amount", "t.timestamp", "t.title").
 		Where(sq.Eq{"t.account_id": aid}).
 		From("transactions t").
@@ -207,8 +207,8 @@ func (r *repository) ListTransactions(aid int64, cid *types.ID, tt *models.TxnTy
 	if cid != nil {
 		b = b.Where(sq.Eq{"t.category_id": cid})
 	}
-	if tt != nil {
-		b = b.Join("categories c ON t.category_id = c.id").Where(sq.Eq{"c.type": *tt})
+	if ct != nil {
+		b = b.Join("categories c ON t.category_id = c.id").Where(sq.Eq{"c.type": *ct})
 	}
 	s, args := b.MustSQL()
 	err = r.db.Select(&results, s, args...)

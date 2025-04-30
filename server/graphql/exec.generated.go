@@ -87,10 +87,10 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Account      func(childComplexity int) int
-		Categories   func(childComplexity int, tt *models.TxnType) int
+		Categories   func(childComplexity int, ct *models.CategoryType) int
 		Category     func(childComplexity int, id types.ID) int
 		Transaction  func(childComplexity int, id types.ID) int
-		Transactions func(childComplexity int, tt *models.TxnType) int
+		Transactions func(childComplexity int, ct *models.CategoryType) int
 	}
 
 	Transaction struct {
@@ -121,9 +121,9 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Account(ctx context.Context) (models.Account, error)
 	Category(ctx context.Context, id types.ID) (models.Category, error)
-	Categories(ctx context.Context, tt *models.TxnType) ([]models.Category, error)
+	Categories(ctx context.Context, ct *models.CategoryType) ([]models.Category, error)
 	Transaction(ctx context.Context, id types.ID) (models.Transaction, error)
-	Transactions(ctx context.Context, tt *models.TxnType) ([]models.Transaction, error)
+	Transactions(ctx context.Context, ct *models.CategoryType) ([]models.Transaction, error)
 }
 type TransactionResolver interface {
 	Account(ctx context.Context, obj *models.Transaction) (models.Account, error)
@@ -300,7 +300,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Categories(childComplexity, args["tt"].(*models.TxnType)), true
+		return e.complexity.Query.Categories(childComplexity, args["ct"].(*models.CategoryType)), true
 
 	case "Query.category":
 		if e.complexity.Query.Category == nil {
@@ -336,7 +336,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Transactions(childComplexity, args["tt"].(*models.TxnType)), true
+		return e.complexity.Query.Transactions(childComplexity, args["ct"].(*models.CategoryType)), true
 
 	case "Transaction.account":
 		if e.complexity.Transaction.Account == nil {
@@ -658,23 +658,23 @@ func (ec *executionContext) field_Query___type_argsName(
 func (ec *executionContext) field_Query_categories_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Query_categories_argsTt(ctx, rawArgs)
+	arg0, err := ec.field_Query_categories_argsCt(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["tt"] = arg0
+	args["ct"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_categories_argsTt(
+func (ec *executionContext) field_Query_categories_argsCt(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*models.TxnType, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("tt"))
-	if tmp, ok := rawArgs["tt"]; ok {
-		return ec.unmarshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx, tmp)
+) (*models.CategoryType, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("ct"))
+	if tmp, ok := rawArgs["ct"]; ok {
+		return ec.unmarshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx, tmp)
 	}
 
-	var zeroVal *models.TxnType
+	var zeroVal *models.CategoryType
 	return zeroVal, nil
 }
 
@@ -727,23 +727,23 @@ func (ec *executionContext) field_Query_transaction_argsID(
 func (ec *executionContext) field_Query_transactions_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Query_transactions_argsTt(ctx, rawArgs)
+	arg0, err := ec.field_Query_transactions_argsCt(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["tt"] = arg0
+	args["ct"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_transactions_argsTt(
+func (ec *executionContext) field_Query_transactions_argsCt(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*models.TxnType, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("tt"))
-	if tmp, ok := rawArgs["tt"]; ok {
-		return ec.unmarshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx, tmp)
+) (*models.CategoryType, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("ct"))
+	if tmp, ok := rawArgs["ct"]; ok {
+		return ec.unmarshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx, tmp)
 	}
 
-	var zeroVal *models.TxnType
+	var zeroVal *models.CategoryType
 	return zeroVal, nil
 }
 
@@ -1373,9 +1373,9 @@ func (ec *executionContext) _Category_type(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TxnType)
+	res := resTmp.(models.CategoryType)
 	fc.Result = res
-	return ec.marshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx, field.Selections, res)
+	return ec.marshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Category_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1385,7 +1385,7 @@ func (ec *executionContext) fieldContext_Category_type(_ context.Context, field 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type TxnType does not have child fields")
+			return nil, errors.New("field of type CategoryType does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1969,7 +1969,7 @@ func (ec *executionContext) _Query_categories(ctx context.Context, field graphql
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Categories(rctx, fc.Args["tt"].(*models.TxnType))
+			return ec.resolvers.Query().Categories(rctx, fc.Args["ct"].(*models.CategoryType))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
@@ -2159,7 +2159,7 @@ func (ec *executionContext) _Query_transactions(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Transactions(rctx, fc.Args["tt"].(*models.TxnType))
+			return ec.resolvers.Query().Transactions(rctx, fc.Args["ct"].(*models.CategoryType))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
@@ -4728,17 +4728,17 @@ func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, ob
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
 			directive0 := func(ctx context.Context) (any, error) {
-				return ec.unmarshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx, v)
+				return ec.unmarshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx, v)
 			}
 
 			directive1 := func(ctx context.Context) (any, error) {
 				tag, err := ec.unmarshalNString2string(ctx, "required,oneof=INCOME EXPENSE")
 				if err != nil {
-					var zeroVal models.TxnType
+					var zeroVal models.CategoryType
 					return zeroVal, err
 				}
 				if ec.directives.Validate == nil {
-					var zeroVal models.TxnType
+					var zeroVal models.CategoryType
 					return zeroVal, errors.New("directive validate is not implemented")
 				}
 				return ec.directives.Validate(ctx, obj, directive0, tag)
@@ -4748,10 +4748,10 @@ func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, ob
 			if err != nil {
 				return it, graphql.ErrorOnPath(ctx, err)
 			}
-			if data, ok := tmp.(models.TxnType); ok {
+			if data, ok := tmp.(models.CategoryType); ok {
 				it.Type = data
 			} else {
-				err := fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.TxnType`, tmp)
+				err := fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.CategoryType`, tmp)
 				return it, graphql.ErrorOnPath(ctx, err)
 			}
 		case "name":
@@ -6012,6 +6012,33 @@ func (ec *executionContext) marshalNCategory2ᚕfinawiseᚗappᚋserverᚋmodels
 	return ret
 }
 
+func (ec *executionContext) unmarshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx context.Context, v any) (models.CategoryType, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := unmarshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType[tmp]
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx context.Context, sel ast.SelectionSet, v models.CategoryType) graphql.Marshaler {
+	res := graphql.MarshalString(marshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType[v])
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+var (
+	unmarshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType = map[string]models.CategoryType{
+		"INCOME":  models.CategoryTypeIncome,
+		"EXPENSE": models.CategoryTypeExpense,
+	}
+	marshalNCategoryType2finawiseᚗappᚋserverᚋmodelsᚐCategoryType = map[models.CategoryType]string{
+		models.CategoryTypeIncome:  "INCOME",
+		models.CategoryTypeExpense: "EXPENSE",
+	}
+)
+
 func (ec *executionContext) unmarshalNCreateAccount2finawiseᚗappᚋserverᚋgraphqlᚐCreateAccount(ctx context.Context, v any) (CreateAccount, error) {
 	res, err := ec.unmarshalInputCreateAccount(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6133,33 +6160,6 @@ func (ec *executionContext) marshalNTransaction2ᚕfinawiseᚗappᚋserverᚋmod
 
 	return ret
 }
-
-func (ec *executionContext) unmarshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx context.Context, v any) (models.TxnType, error) {
-	tmp, err := graphql.UnmarshalString(v)
-	res := unmarshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType[tmp]
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx context.Context, sel ast.SelectionSet, v models.TxnType) graphql.Marshaler {
-	res := graphql.MarshalString(marshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType[v])
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-var (
-	unmarshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType = map[string]models.TxnType{
-		"INCOME":  models.TxnTypeIncome,
-		"EXPENSE": models.TxnTypeExpense,
-	}
-	marshalNTxnType2finawiseᚗappᚋserverᚋmodelsᚐTxnType = map[models.TxnType]string{
-		models.TxnTypeIncome:  "INCOME",
-		models.TxnTypeExpense: "EXPENSE",
-	}
-)
 
 func (ec *executionContext) unmarshalNULID2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐID(ctx context.Context, v any) (types.ID, error) {
 	var res types.ID
@@ -6448,6 +6448,34 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx context.Context, v any) (*models.CategoryType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	tmp, err := graphql.UnmarshalString(v)
+	res := unmarshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType[tmp]
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx context.Context, sel ast.SelectionSet, v *models.CategoryType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalString(marshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType[*v])
+	return res
+}
+
+var (
+	unmarshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType = map[string]models.CategoryType{
+		"INCOME":  models.CategoryTypeIncome,
+		"EXPENSE": models.CategoryTypeExpense,
+	}
+	marshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType = map[models.CategoryType]string{
+		models.CategoryTypeIncome:  "INCOME",
+		models.CategoryTypeExpense: "EXPENSE",
+	}
+)
+
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	if v == nil {
 		return nil, nil
@@ -6499,34 +6527,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	res := graphql.MarshalString(*v)
 	return res
 }
-
-func (ec *executionContext) unmarshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx context.Context, v any) (*models.TxnType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	tmp, err := graphql.UnmarshalString(v)
-	res := unmarshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType[tmp]
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType(ctx context.Context, sel ast.SelectionSet, v *models.TxnType) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalString(marshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType[*v])
-	return res
-}
-
-var (
-	unmarshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType = map[string]models.TxnType{
-		"INCOME":  models.TxnTypeIncome,
-		"EXPENSE": models.TxnTypeExpense,
-	}
-	marshalOTxnType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐTxnType = map[models.TxnType]string{
-		models.TxnTypeIncome:  "INCOME",
-		models.TxnTypeExpense: "EXPENSE",
-	}
-)
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
 	if v == nil {

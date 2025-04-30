@@ -1,4 +1,4 @@
-export type TxnType = "INCOME" | "EXPENSE";
+export type CategoryType = "INCOME" | "EXPENSE";
 
 export type Account = {
 	id: number;
@@ -10,7 +10,7 @@ export type Account = {
 export type Category = {
 	id: string;
 	name: string;
-	type: TxnType;
+	type: CategoryType;
 };
 
 export type Transaction = {

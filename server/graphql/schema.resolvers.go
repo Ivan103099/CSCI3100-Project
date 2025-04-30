@@ -84,9 +84,9 @@ func (r *queryResolver) Category(ctx context.Context, id types.ID) (models.Categ
 }
 
 // Categories is the resolver for the categories field.
-func (r *queryResolver) Categories(ctx context.Context, tt *models.TxnType) ([]models.Category, error) {
+func (r *queryResolver) Categories(ctx context.Context, ct *models.CategoryType) ([]models.Category, error) {
 	session := ctx.Value("session").(account.Session)
-	return r.Repository.GetCategories(session.GroupID, tt)
+	return r.Repository.GetCategories(session.GroupID, ct)
 }
 
 // Transaction is the resolver for the transaction field.
@@ -95,9 +95,9 @@ func (r *queryResolver) Transaction(ctx context.Context, id types.ID) (models.Tr
 }
 
 // Transactions is the resolver for the transactions field.
-func (r *queryResolver) Transactions(ctx context.Context, tt *models.TxnType) ([]models.Transaction, error) {
+func (r *queryResolver) Transactions(ctx context.Context, ct *models.CategoryType) ([]models.Transaction, error) {
 	session := ctx.Value("session").(account.Session)
-	return r.Repository.ListTransactions(session.AccountID, nil, tt)
+	return r.Repository.ListTransactions(session.AccountID, nil, ct)
 }
 
 // Account is the resolver for the account field.

@@ -16,9 +16,9 @@ directive @goField(
 
 directive @goEnum(value: String) on ENUM_VALUE
 
-enum TxnType @goModel(model: "finawise.app/server/models.TxnType") {
-	INCOME @goEnum(value: "finawise.app/server/models.TxnTypeIncome")
-	EXPENSE @goEnum(value: "finawise.app/server/models.TxnTypeExpense")
+enum CategoryType @goModel(model: "finawise.app/server/models.CategoryType") {
+	INCOME @goEnum(value: "finawise.app/server/models.CategoryTypeIncome")
+	EXPENSE @goEnum(value: "finawise.app/server/models.CategoryTypeExpense")
 }
 
 scalar ULID
@@ -47,7 +47,7 @@ type Category {
 	id: ULID!
 	group: Group!
 	name: String!
-	type: TxnType!
+	type: CategoryType!
 
 	transactions: [Transaction!]!
 }
@@ -65,9 +65,9 @@ type Transaction {
 type Query {
 	account: Account! @auth(enabled: true)
 	category(id: ULID!): Category! @auth(enabled: true)
-	categories(tt: TxnType): [Category!]! @auth(enabled: true)
+	categories(ct: CategoryType): [Category!]! @auth(enabled: true)
 	transaction(id: ULID!): Transaction! @auth(enabled: true)
-	transactions(tt: TxnType): [Transaction!]! @auth(enabled: true)
+	transactions(ct: CategoryType): [Transaction!]! @auth(enabled: true)
 }
 
 input CreateAccount {
@@ -77,7 +77,7 @@ input CreateAccount {
 }
 
 input CreateCategory {
-	type: TxnType! @validate(tag: "required,oneof=INCOME EXPENSE")
+	type: CategoryType! @validate(tag: "required,oneof=INCOME EXPENSE")
 	name: String! @validate(tag: "required,max=20,printascii")
 }
 

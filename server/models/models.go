@@ -2,11 +2,11 @@ package models
 
 import "finawise.app/server/models/types"
 
-type TxnType string
+type CategoryType string
 
 const (
-	TxnTypeIncome  TxnType = "INCOME"
-	TxnTypeExpense TxnType = "EXPENSE"
+	CategoryTypeIncome  CategoryType = "INCOME"
+	CategoryTypeExpense CategoryType = "EXPENSE"
 )
 
 type Account struct {
@@ -29,10 +29,10 @@ type Group struct {
 }
 
 type Category struct {
-	ID      types.ID `db:"id" json:"id"`
-	GroupID int64    `db:"group_id" json:"-"`
-	Name    string   `db:"name" json:"name"`
-	Type    TxnType  `db:"type" json:"type"`
+	ID      types.ID     `db:"id" json:"id"`
+	GroupID int64        `db:"group_id" json:"-"`
+	Name    string       `db:"name" json:"name"`
+	Type    CategoryType `db:"type" json:"type"`
 }
 
 type Transaction struct {

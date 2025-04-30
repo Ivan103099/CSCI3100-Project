@@ -14,7 +14,7 @@ import type {
 	AccountSummary,
 	Category,
 	Transaction,
-	TxnType,
+	CategoryType,
 } from "./models";
 import { BASE_URL, $account } from "./client";
 
@@ -69,15 +69,15 @@ export const useAccountSummaryQuery = () =>
     `,
 	});
 
-export const useCategoriesQuery = (tt?: TxnType) =>
+export const useCategoriesQuery = (type?: CategoryType) =>
 	useQuery<{
 		categories: (Category & {
 			transactions: Transaction[];
 		})[];
 	}>({
 		query: gql`
-      query ($tt: TxnType) {
-        categories(tt: $tt) {
+      query ($type: CategoryType) {
+        categories(ct: $type) {
           id
           type
           name
@@ -90,18 +90,18 @@ export const useCategoriesQuery = (tt?: TxnType) =>
         }
       }
     `,
-		variables: { tt },
+		variables: { type },
 	});
 
-export const useTransactionsQuery = (tt?: TxnType) =>
+export const useTransactionsQuery = (type?: CategoryType) =>
 	useQuery<{
 		transactions: (Transaction & {
 			category: Category;
 		})[];
 	}>({
 		query: gql`
-      query ($tt: TxnType) {
-        transactions(tt: $tt) {
+      query ($type: CategoryType) {
+        transactions(ct: $type) {
           id
           title
           amount
@@ -114,7 +114,7 @@ export const useTransactionsQuery = (tt?: TxnType) =>
         }
       }
     `,
-		variables: { tt },
+		variables: { type },
 	});
 
 export const useCreateAccountMutation = () =>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
 
-import type { TxnType } from "@/lib/models";
+import type { CategoryType } from "@/lib/models";
 import { useCategoriesQuery } from "@/lib/graphql";
 
 import Card from "@/components/Card";
@@ -15,7 +15,7 @@ export default function AppCategoriesPage() {
 	const [search, setSearch] = React.useState("");
 
 	const [query] = useCategoriesQuery(
-		tab === "ALL" ? undefined : (tab as TxnType),
+		tab === "ALL" ? undefined : (tab as CategoryType),
 	);
 
 	const categories = React.useMemo(

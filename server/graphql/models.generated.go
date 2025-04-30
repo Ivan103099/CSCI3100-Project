@@ -14,8 +14,8 @@ type CreateAccount struct {
 }
 
 type CreateCategory struct {
-	Type models.TxnType `json:"type"`
-	Name string         `json:"name"`
+	Type models.CategoryType `json:"type"`
+	Name string              `json:"name"`
 }
 
 type CreateTransaction struct {
