@@ -48,6 +48,8 @@ type Category {
 	group: Group!
 	name: String!
 	type: CategoryType!
+	emoji: String!
+	color: String!
 
 	transactions: [Transaction!]!
 }
@@ -61,7 +63,6 @@ type Transaction {
 	title: String!
 }
 
-# TODO: add filters
 type Query {
 	account: Account! @auth(enabled: true)
 	category(id: ULID!): Category! @auth(enabled: true)
@@ -79,6 +80,8 @@ input CreateAccount {
 input CreateCategory {
 	type: CategoryType! @validate(tag: "required,oneof=INCOME EXPENSE")
 	name: String! @validate(tag: "required,max=20,printascii")
+	emoji: String! @validate(tag: "required,min=1,max=4") # TODO: need stricter validation
+	color: String! @validate(tag: "required,hexcolor")
 }
 
 input CreateTransaction {

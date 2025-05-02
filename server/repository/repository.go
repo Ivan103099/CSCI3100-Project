@@ -2,7 +2,10 @@ package repository
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	_ "embed"
+	"fmt"
+	"regexp"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/tnychn/sq"
@@ -13,6 +16,30 @@ import (
 	"finawise.app/server/models"
 	"finawise.app/server/models/types"
 )
+
+func init() {
+	sqlite.MustRegisterFunction("REGEXP", &sqlite.FunctionImpl{
+		NArgs: 2,
+		Scalar: func(ctx *sqlite.FunctionContext, args []driver.Value) (driver.Value, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("expected 2 arguments, got %d", len(args))
+			}
+			pattern, ok := args[0].(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string for pattern, got %T", args[0])
+			}
+			value, ok := args[1].(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string for value, got %T", args[0])
+			}
+			matched, err := regexp.MatchString(pattern, value)
+			if err != nil {
+				return nil, err
+			}
+			return matched, nil
+		},
+	})
+}
 
 //go:embed schema.sql
 var rawSchemaSQL string
@@ -107,8 +134,8 @@ func (r *repository) CreateAccount(a models.Account) (int64, error) {
 func (r *repository) CreateCategory(c models.Category) (types.ID, error) {
 	cid := types.MakeID()
 	s, args := SQL.Insert("categories").
-		Columns("id", "group_id", "name", "type").
-		Values(cid, c.GroupID, c.Name, c.Type).
+		Columns("id", "group_id", "name", "type", "emoji", "color").
+		Values(cid, c.GroupID, c.Name, c.Type, c.Emoji, c.Color).
 		MustSQL()
 	_, err := r.db.Exec(s, args...)
 	return cid, err

@@ -33,6 +33,8 @@ type Category struct {
 	GroupID int64        `db:"group_id" json:"-"`
 	Name    string       `db:"name" json:"name"`
 	Type    CategoryType `db:"type" json:"type"`
+	Emoji   string       `db:"emoji" json:"emoji"`
+	Color   string       `db:"color" json:"color"`
 }
 
 type Transaction struct {

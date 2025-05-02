@@ -68,6 +68,8 @@ type ComplexityRoot struct {
 	}
 
 	Category struct {
+		Color        func(childComplexity int) int
+		Emoji        func(childComplexity int) int
 		Group        func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Name         func(childComplexity int) int
@@ -204,6 +206,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.AccountSummary.Income(childComplexity), true
+
+	case "Category.color":
+		if e.complexity.Category.Color == nil {
+			break
+		}
+
+		return e.complexity.Category.Color(childComplexity), true
+
+	case "Category.emoji":
+		if e.complexity.Category.Emoji == nil {
+			break
+		}
+
+		return e.complexity.Category.Emoji(childComplexity), true
 
 	case "Category.group":
 		if e.complexity.Category.Group == nil {
@@ -1391,6 +1407,94 @@ func (ec *executionContext) fieldContext_Category_type(_ context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Category_emoji(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Category_emoji(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Emoji, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Category_emoji(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Category",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Category_color(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Category_color(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Color, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Category_color(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Category",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Category_transactions(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Category_transactions(ctx, field)
 	if err != nil {
@@ -1661,6 +1765,10 @@ func (ec *executionContext) fieldContext_Mutation_createCategory(ctx context.Con
 				return ec.fieldContext_Category_name(ctx, field)
 			case "type":
 				return ec.fieldContext_Category_type(ctx, field)
+			case "emoji":
+				return ec.fieldContext_Category_emoji(ctx, field)
+			case "color":
+				return ec.fieldContext_Category_color(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -1934,6 +2042,10 @@ func (ec *executionContext) fieldContext_Query_category(ctx context.Context, fie
 				return ec.fieldContext_Category_name(ctx, field)
 			case "type":
 				return ec.fieldContext_Category_type(ctx, field)
+			case "emoji":
+				return ec.fieldContext_Category_emoji(ctx, field)
+			case "color":
+				return ec.fieldContext_Category_color(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -2028,6 +2140,10 @@ func (ec *executionContext) fieldContext_Query_categories(ctx context.Context, f
 				return ec.fieldContext_Category_name(ctx, field)
 			case "type":
 				return ec.fieldContext_Category_type(ctx, field)
+			case "emoji":
+				return ec.fieldContext_Category_emoji(ctx, field)
+			case "color":
+				return ec.fieldContext_Category_color(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -2518,6 +2634,10 @@ func (ec *executionContext) fieldContext_Transaction_category(_ context.Context,
 				return ec.fieldContext_Category_name(ctx, field)
 			case "type":
 				return ec.fieldContext_Category_type(ctx, field)
+			case "emoji":
+				return ec.fieldContext_Category_emoji(ctx, field)
+			case "color":
+				return ec.fieldContext_Category_color(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -4718,7 +4838,7 @@ func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "name"}
+	fieldsInOrder := [...]string{"type", "name", "emoji", "color"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4777,6 +4897,60 @@ func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, ob
 			}
 			if data, ok := tmp.(string); ok {
 				it.Name = data
+			} else {
+				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+		case "emoji":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("emoji"))
+			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
+
+			directive1 := func(ctx context.Context) (any, error) {
+				tag, err := ec.unmarshalNString2string(ctx, "required,min=1,max=4")
+				if err != nil {
+					var zeroVal string
+					return zeroVal, err
+				}
+				if ec.directives.Validate == nil {
+					var zeroVal string
+					return zeroVal, errors.New("directive validate is not implemented")
+				}
+				return ec.directives.Validate(ctx, obj, directive0, tag)
+			}
+
+			tmp, err := directive1(ctx)
+			if err != nil {
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+			if data, ok := tmp.(string); ok {
+				it.Emoji = data
+			} else {
+				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+		case "color":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("color"))
+			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
+
+			directive1 := func(ctx context.Context) (any, error) {
+				tag, err := ec.unmarshalNString2string(ctx, "required,hexcolor")
+				if err != nil {
+					var zeroVal string
+					return zeroVal, err
+				}
+				if ec.directives.Validate == nil {
+					var zeroVal string
+					return zeroVal, errors.New("directive validate is not implemented")
+				}
+				return ec.directives.Validate(ctx, obj, directive0, tag)
+			}
+
+			tmp, err := directive1(ctx)
+			if err != nil {
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+			if data, ok := tmp.(string); ok {
+				it.Color = data
 			} else {
 				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 				return it, graphql.ErrorOnPath(ctx, err)
@@ -5156,6 +5330,16 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "type":
 			out.Values[i] = ec._Category_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "emoji":
+			out.Values[i] = ec._Category_emoji(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "color":
+			out.Values[i] = ec._Category_color(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

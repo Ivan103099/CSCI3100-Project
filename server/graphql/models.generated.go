@@ -14,8 +14,10 @@ type CreateAccount struct {
 }
 
 type CreateCategory struct {
-	Type models.CategoryType `json:"type"`
-	Name string              `json:"name"`
+	Type  models.CategoryType `json:"type"`
+	Name  string              `json:"name"`
+	Emoji string              `json:"emoji"`
+	Color string              `json:"color"`
 }
 
 type CreateTransaction struct {

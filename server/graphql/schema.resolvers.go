@@ -45,6 +45,8 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory)
 		GroupID: session.GroupID,
 		Name:    c.Name,
 		Type:    c.Type,
+		Emoji:   c.Emoji,
+		Color:   c.Color,
 	}
 	id, err := r.Repository.CreateCategory(cat)
 	if err != nil {
