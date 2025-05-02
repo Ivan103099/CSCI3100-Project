@@ -73,24 +73,6 @@ Calendar.Cell = ({ className, ...props }: Aria.CalendarCellProps) => (
 	/>
 );
 
-const Content = ({ className, ...props }: Aria.DialogProps) => (
-	<Aria.Popover
-		offset={4}
-		className={cn(
-			"w-auto p-3 z-50 rounded-md border border-border bg-popover text-popover-foreground shadow-md outline-none",
-			className,
-		)}
-	>
-		<Aria.Dialog
-			className={cn(
-				"flex w-full flex-col space-y-4 outline-none sm:flex-row sm:space-x-4 sm:space-y-0",
-				className,
-			)}
-			{...props}
-		/>
-	</Aria.Popover>
-);
-
 const DatePicker = <T extends Aria.DateValue>({
 	label,
 	description,

@@ -11,6 +11,8 @@ export type Category = {
 	id: string;
 	name: string;
 	type: CategoryType;
+	emoji: string;
+	color: string;
 };
 
 export type Transaction = {

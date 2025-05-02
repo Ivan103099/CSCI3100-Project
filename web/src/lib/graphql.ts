@@ -81,6 +81,8 @@ export const useCategoriesQuery = (type?: CategoryType) =>
           id
           type
           name
+          emoji
+          color
           transactions {
             id
             title
@@ -110,6 +112,8 @@ export const useTransactionsQuery = (type?: CategoryType) =>
             id
             name
             type
+            emoji
+            color
           }
         }
       }
@@ -124,6 +128,20 @@ export const useCreateAccountMutation = () =>
         email: $email
         password: $password
         fullname: $fullname
+      }) {
+        id
+      }
+    }
+  `);
+
+export const useCreateCategoryMutation = () =>
+	useMutation<{ createCategory: { id: string } }>(gql`
+    mutation ($name: String!, $type: CategoryType!, $emoji: String!, $color: String!) {
+      createCategory(c: {
+        name: $name
+        type: $type
+        emoji: $emoji
+        color: $color
       }) {
         id
       }

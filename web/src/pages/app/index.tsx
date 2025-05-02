@@ -7,7 +7,6 @@ import {
 	ArrowDown,
 	ArrowUp,
 	DollarSign,
-	CreditCard,
 	PiggyBank,
 } from "lucide-react";
 
@@ -116,9 +115,12 @@ const RecentTransactions = () => {
 							key={item.id}
 							className="flex items-center py-4 overflow-hidden"
 						>
-							<Avatar>
-								<CreditCard className="size-4 min-w-10" />
-							</Avatar>
+							<span
+								className="flex items-center justify-center size-10 rounded-xl text-xl"
+								style={{ backgroundColor: item.category.color }}
+							>
+								{item.category.emoji}
+							</span>
 							<div className="mx-4 space-y-1 overflow-scroll">
 								<p className="text-sm text-ellipsis font-medium leading-none">
 									{item.title}
@@ -152,15 +154,6 @@ const RecentTransactions = () => {
 };
 
 const ExpenseBreakdown = () => {
-	const COLORS = [
-		"var(--color-blue-400)",
-		"var(--color-blue-600)",
-		"var(--color-indigo-400)",
-		"var(--color-indigo-600)",
-		"var(--color-yellow-400)",
-		"var(--color-yellow-600)",
-	];
-
 	const [query] = useCategoriesQuery("EXPENSE");
 
 	const chart = React.useMemo(() => {
@@ -175,8 +168,8 @@ const ExpenseBreakdown = () => {
 
 	const data = React.useMemo(
 		() =>
-			(query.data?.categories ?? []).map((cat, i) => ({
-				fill: COLORS[i % COLORS.length],
+			(query.data?.categories ?? []).map((cat) => ({
+				fill: cat.color,
 				category: cat.name,
 				amount: cat.transactions.reduce((acc, item) => acc + item.amount, 0),
 			})),
@@ -185,9 +178,12 @@ const ExpenseBreakdown = () => {
 
 	const most = React.useMemo(
 		() =>
-			data.length
-				? data.reduce((m, i) => (m.amount > i.amount ? m : i))
-				: undefined,
+			data
+				.filter((cat) => cat.amount > 0)
+				.reduce((m, i) => (m.amount > i.amount ? m : i), {
+					category: "?",
+					amount: 0,
+				}),
 		[data],
 	);
 
