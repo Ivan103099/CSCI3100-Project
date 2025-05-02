@@ -30,7 +30,9 @@ type ToastFields = {
 	variant?: VariantProps<typeof variants>["variant"];
 };
 
-export const toasts = new Aria.UNSTABLE_ToastQueue<ToastFields>();
+export const toasts = new Aria.UNSTABLE_ToastQueue<ToastFields>({
+	maxVisibleToasts: 1,
+});
 
 const Toast = ({
 	className,

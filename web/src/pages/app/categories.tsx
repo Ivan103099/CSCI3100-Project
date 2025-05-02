@@ -2,7 +2,7 @@ import React from "react";
 import { Label, Form, parseColor } from "react-aria-components";
 import { Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
 
-import type { CategoryType } from "@/lib/models";
+import { CategoryType } from "@/lib/models";
 import { useCategoriesQuery, useCreateCategoryMutation } from "@/lib/graphql";
 
 import Tabs from "@/components/Tabs";
@@ -20,9 +20,9 @@ import { toasts } from "@/components/Toast";
 const CategoryModal = () => {
 	const init = {
 		name: "",
-		emoji: "☺️",
+		emoji: { emoji: "🪙", label: "Coin" },
 		color: parseColor("#000000"),
-		type: "EXPENSE" as CategoryType,
+		type: CategoryType.EXPENSE,
 	};
 	const [form, setFormData] = React.useState(init);
 
@@ -32,7 +32,7 @@ const CategoryModal = () => {
 		e.preventDefault();
 		createCategory({
 			name: form.name,
-			emoji: form.emoji,
+			emoji: form.emoji.emoji,
 			color: form.color.toString("hex"),
 			type: form.type,
 		}).then(({ error, data }) => {
@@ -76,6 +76,13 @@ const CategoryModal = () => {
 							close();
 						}}
 					>
+						<TextField
+							label="Name"
+							isRequired
+							autoFocus
+							value={form.name}
+							onChange={(value) => setFormData({ ...form, name: value })}
+						/>
 						<div className="grid grid-cols-6 gap-4">
 							<Select
 								label="Type"
@@ -87,8 +94,8 @@ const CategoryModal = () => {
 									setFormData({ ...form, type: key as CategoryType })
 								}
 							>
-								<Select.Item id="EXPENSE">Expense</Select.Item>
-								<Select.Item id="INCOME">Income</Select.Item>
+								<Select.Item id={CategoryType.EXPENSE}>Expense</Select.Item>
+								<Select.Item id={CategoryType.INCOME}>Income</Select.Item>
 							</Select>
 							<div className="col-span-2 flex flex-col gap-2">
 								<Label className="text-sm font-medium leading-none">
@@ -105,16 +112,10 @@ const CategoryModal = () => {
 								</Label>
 								<EmojiPicker
 									value={form.emoji}
-									onEmojiSelect={({ emoji }) => setFormData({ ...form, emoji })}
+									onEmojiSelect={(emoji) => setFormData({ ...form, emoji })}
 								/>
 							</div>
 						</div>
-						<TextField
-							label="Name"
-							isRequired
-							value={form.name}
-							onChange={(value) => setFormData({ ...form, name: value })}
-						/>
 					</Form>
 					<Modal.Footer>
 						<Button onPress={close} type="button" variant="outline">
@@ -177,8 +178,8 @@ export default function AppCategoriesPage() {
 			>
 				<Tabs.Nav className="self-start">
 					<Tabs.NavItem id="ALL">All</Tabs.NavItem>
-					<Tabs.NavItem id="EXPENSE">Expense</Tabs.NavItem>
-					<Tabs.NavItem id="INCOME">Income</Tabs.NavItem>
+					<Tabs.NavItem id={CategoryType.EXPENSE}>Expense</Tabs.NavItem>
+					<Tabs.NavItem id={CategoryType.INCOME}>Income</Tabs.NavItem>
 				</Tabs.Nav>
 				<Tabs.Content
 					id={tab}

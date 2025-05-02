@@ -10,7 +10,7 @@ import {
 	PiggyBank,
 } from "lucide-react";
 
-import type { AccountSummary } from "@/lib/models";
+import { CategoryType, type AccountSummary } from "@/lib/models";
 import { $account } from "@/lib/client";
 import {
 	useAccountSummaryQuery,
@@ -19,7 +19,7 @@ import {
 } from "@/lib/graphql";
 
 import Card from "@/components/Card";
-import Avatar from "@/components/Avatar";
+import Select from "@/components/Select";
 import Button from "@/components/Button";
 import {
 	ChartContainer,
@@ -98,7 +98,7 @@ const RecentTransactions = () => {
 		return <></>;
 	}
 	return (
-		<Card className="flex flex-col justify-between h-full">
+		<Card className="flex flex-col h-full">
 			<Card.Header>
 				<Card.Title>Recent Transactions</Card.Title>
 				<Card.Description>
@@ -106,7 +106,7 @@ const RecentTransactions = () => {
 					month.
 				</Card.Description>
 			</Card.Header>
-			<Card.Content className="flex flex-col divide-y divide-border">
+			<Card.Content className="flex-1 flex flex-col divide-y divide-border">
 				{query.data?.transactions.slice(0, 5).map((item) => {
 					const type = item.category.type;
 					const color = type === "INCOME" ? "text-green-500" : "text-red-500";
@@ -153,8 +153,10 @@ const RecentTransactions = () => {
 	);
 };
 
-const ExpenseBreakdown = () => {
-	const [query] = useCategoriesQuery("EXPENSE");
+const CategorizedBreakdown = () => {
+	const [type, setType] = React.useState(CategoryType.EXPENSE);
+
+	const [query] = useCategoriesQuery(type);
 
 	const chart = React.useMemo(() => {
 		return (query.data?.categories ?? []).reduce(
@@ -177,14 +179,16 @@ const ExpenseBreakdown = () => {
 	);
 
 	const most = React.useMemo(
-		() =>
-			data
+		() => ({
+			verb: type === CategoryType.EXPENSE ? "spent" : "earned",
+			data: data
 				.filter((cat) => cat.amount > 0)
 				.reduce((m, i) => (m.amount > i.amount ? m : i), {
 					category: "?",
 					amount: 0,
 				}),
-		[data],
+		}),
+		[type, data],
 	);
 
 	if (query.error) {
@@ -192,11 +196,27 @@ const ExpenseBreakdown = () => {
 	}
 	return (
 		<Card>
-			<Card.Header>
-				<Card.Title>Expense Breakdown</Card.Title>
-				<Card.Description>
-					You spent most on {most?.category ?? "?"} this month.
-				</Card.Description>
+			<Card.Header className="flex-row items-center justify-between gap-2">
+				<div className="space-y-1.5">
+					<Card.Title>Categorized Breakdown</Card.Title>
+					<Card.Description>
+						You {most.verb} most on {most.data.category} this month.
+					</Card.Description>
+				</div>
+				<Select
+					className="font-medium"
+					selectedKey={type}
+					onSelectionChange={(key) => setType(key as CategoryType)}
+				>
+					<Select.Item id={CategoryType.EXPENSE}>Expense</Select.Item>
+					<Select.Item id={CategoryType.INCOME}>Income</Select.Item>
+				</Select>
+				{/* <Tabs>
+					<Tabs.Nav className="self-start">
+						<Tabs.NavItem id="EXPENSE">Expense</Tabs.NavItem>
+						<Tabs.NavItem id="INCOME">Income</Tabs.NavItem>
+					</Tabs.Nav>
+				</Tabs> */}
 			</Card.Header>
 			<Card.Content>
 				<ChartContainer
@@ -302,7 +322,7 @@ export default function AppDashboardPage() {
 					<RecentTransactions />
 				</div>
 				<div className="col-span-3">
-					<ExpenseBreakdown />
+					<CategorizedBreakdown />
 				</div>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">

@@ -37,6 +37,10 @@
 }
 
 @layer base {
+  * {
+    scrollbar-width: thin;
+  }
+
   html,
   body {
     @apply h-full w-full;

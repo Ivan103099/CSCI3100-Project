@@ -14,22 +14,22 @@ const EmojiPicker = ({
 	value,
 	onEmojiSelect,
 	...props
-}: EmojiPickerRootProps & { value?: string }) => {
-	const [selected, setSelected] = React.useState(value ?? "");
+}: EmojiPickerRootProps & { value?: { emoji: string; label: string } }) => {
+	const [selected, setSelected] = React.useState(value);
 	return (
 		<Aria.DialogTrigger>
-			<Button
-				variant="outline"
-				className="text-muted-foreground font-normal text-2xl outline-none"
-			>
-				{selected}
+			<Button variant="outline" className="font-normal outline-none">
+				<span className="text-2xl">{selected?.emoji}</span>
+				<span className="text-xs overflow-hidden text-ellipsis">
+					{selected?.label}
+				</span>
 			</Button>
 			<Popover className="min-w-(--trigger-width)">
 				<Aria.Dialog className="outline-none">
 					<_EmojiPicker.Root
 						columns={8}
 						onEmojiSelect={(emoji) => {
-							setSelected(emoji.emoji);
+							setSelected(emoji);
 							onEmojiSelect?.(emoji);
 						}}
 						className="isolate flex flex-col h-80 gap-2"
@@ -50,16 +50,17 @@ const EmojiPicker = ({
 									Row: ({ children, ...props }) => (
 										<div {...props}>{children}</div>
 									),
-									Emoji: ({ emoji: { emoji }, ...props }) => (
+									Emoji: ({ emoji, ...props }) => (
 										<button
 											className={cn(
 												Button.variants({ variant: "ghost" }),
 												"size-9 text-xl",
-												emoji === selected && "border-2 border-border",
+												emoji.label === selected?.label &&
+													"border-2 border-border",
 											)}
 											{...props}
 										>
-											{emoji}
+											{emoji.emoji}
 										</button>
 									),
 								}}

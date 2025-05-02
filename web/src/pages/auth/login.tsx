@@ -22,11 +22,14 @@ export default function AuthLoginPage() {
 		requestLogin({ email, password })
 			.then(() => navigate("/"))
 			.catch(({ message }) =>
-				toasts.add({
-					title: "Login Failed",
-					description: message,
-					variant: "destructive",
-				}),
+				toasts.add(
+					{
+						title: "Login Failed",
+						description: message,
+						variant: "destructive",
+					},
+					{ timeout: 5000 },
+				),
 			);
 	};
 

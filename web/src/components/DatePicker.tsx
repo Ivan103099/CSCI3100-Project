@@ -5,6 +5,7 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import Button from "./Button";
+import Popover from "./Popover";
 
 const Calendar = <T extends Aria.DateValue>({
 	className,
@@ -123,9 +124,11 @@ const DatePicker = <T extends Aria.DateValue>({
 				{description}
 			</Aria.Text>
 		)}
-		<Content>
-			<Calendar />
-		</Content>
+		<Popover className="p-3">
+			<Aria.Dialog className="flex w-full flex-col space-y-4 outline-none sm:flex-row sm:space-x-4 sm:space-y-0">
+				<Calendar />
+			</Aria.Dialog>
+		</Popover>
 	</Aria.DatePicker>
 );
 

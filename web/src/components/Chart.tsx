@@ -227,7 +227,7 @@ const ChartTooltipContent = React.forwardRef<
 										)}
 										<div
 											className={cn(
-												"flex flex-1 justify-between leading-none",
+												"flex flex-1 gap-2 justify-between leading-none",
 												nestLabel ? "items-end" : "items-center",
 											)}
 										>
@@ -238,8 +238,11 @@ const ChartTooltipContent = React.forwardRef<
 												</span>
 											</div>
 											{item.value && (
-												<span className="font-mono font-medium tabular-nums text-foreground">
-													{item.value.toLocaleString()}
+												<span className="font-medium tabular-nums text-foreground">
+													{item.value.toLocaleString("en-HK", {
+														style: "currency",
+														currency: "HKD",
+													})}
 												</span>
 											)}
 										</div>

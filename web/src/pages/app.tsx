@@ -12,7 +12,7 @@ import {
 	Plus,
 } from "lucide-react";
 
-import type { CategoryType } from "@/lib/models";
+import { CategoryType } from "@/lib/models";
 import { $account, useLogoutRequest } from "@/lib/client";
 import {
 	useAccountQuery,
@@ -20,7 +20,6 @@ import {
 	useCreateTransactionMutation,
 } from "@/lib/graphql";
 
-import Avatar from "@/components/Avatar";
 import Button from "@/components/Button";
 import Menu from "@/components/Menu";
 import Modal from "@/components/Modal";
@@ -57,7 +56,7 @@ const TransactionModal = () => {
 	const currentDateTime = React.useMemo(() => now(getLocalTimeZone()), []);
 
 	const init = {
-		type: "EXPENSE" as CategoryType,
+		type: CategoryType.EXPENSE,
 		category: "",
 		title: "",
 		datetime: currentDateTime,
@@ -80,17 +79,23 @@ const TransactionModal = () => {
 			{ additionalTypenames: ["AccountSummary"] },
 		).then(({ error, data }) => {
 			if (error)
-				toasts.add({
-					title: "Transaction Create Failed",
-					description: error.message,
-					variant: "destructive",
-				});
+				toasts.add(
+					{
+						title: "Transaction Create Failed",
+						description: error.message,
+						variant: "destructive",
+					},
+					{ timeout: 5000 },
+				);
 			else
-				toasts.add({
-					title: "Transaction Created",
-					description: data?.createTransaction.id ?? "",
-					variant: "success",
-				});
+				toasts.add(
+					{
+						title: "Transaction Created",
+						description: data?.createTransaction.id ?? "",
+						variant: "success",
+					},
+					{ timeout: 5000 },
+				);
 		});
 	};
 
@@ -100,111 +105,111 @@ const TransactionModal = () => {
 	}, [form.type]);
 
 	return (
-		<Modal.Overlay>
-			<Modal.Content>
-				{({ close }) => (
-					<>
-						<Modal.Header className="mb-2">
-							<Modal.Title>Create New Transaction</Modal.Title>
-							<Modal.Description className="text-sm text-muted-foreground">
-								Fill in the details of your new transaction.
-							</Modal.Description>
-						</Modal.Header>
-						<Form
-							id="form"
-							className="flex flex-col gap-4"
-							onSubmit={(e) => {
-								handleSubmit(e);
-								setFormData(init);
-								close();
-							}}
-						>
-							<div className="grid grid-cols-8 gap-4">
-								<NumberField
-									autoFocus
-									label="Amount"
-									className="col-span-3"
-									isRequired
-									formatOptions={{
-										style: "currency",
-										currency: "HKD",
-										currencySign: "standard",
-										currencyDisplay: "symbol",
-									}}
-									minValue={0}
-									value={form.amount}
-									onChange={(value) =>
-										value >= 0 && setFormData({ ...form, amount: value })
-									}
-								/>
-								<Select
-									label="Type"
-									placeholder="Type"
-									className="col-span-2"
-									isRequired
-									selectedKey={form.type}
-									onSelectionChange={(key) =>
-										setFormData({ ...form, type: key as CategoryType })
-									}
-								>
-									<Select.Item id="EXPENSE">Expense</Select.Item>
-									<Select.Item id="INCOME">Income</Select.Item>
-								</Select>
-								<Select
-									label="Category"
-									placeholder="Category"
-									className="col-span-3"
-									isRequired
-									selectedKey={form.category}
-									onSelectionChange={(key) =>
-										setFormData({ ...form, category: key as string })
-									}
-								>
-									{(queryCategories.data?.categories ?? []).map((cat) => (
-										<Select.Item key={cat.id} id={cat.id}>
-											{cat.name}
-										</Select.Item>
-									))}
-								</Select>
-							</div>
-							<div className="grid grid-cols-8 gap-4">
-								<TextField
-									label="Title"
-									className="col-span-4"
-									isRequired
-									value={form.title}
-									onChange={(value) => setFormData({ ...form, title: value })}
-								/>
-								<DatePicker
-									label="Date Time"
-									className="col-span-4"
-									granularity="minute"
-									hideTimeZone
-									isRequired
-									minValue={startOfMonth(currentDateTime).set({
-										hour: 0,
-										minute: 0,
-									})}
-									maxValue={currentDateTime}
-									value={form.datetime}
-									onChange={(value) =>
-										value && setFormData({ ...form, datetime: value })
-									}
-								/>
-							</div>
-						</Form>
-						<Modal.Footer>
-							<Button onPress={close} type="button" variant="outline">
-								Cancel
-							</Button>
-							<Button type="submit" form="form">
-								Add Transaction
-							</Button>
-						</Modal.Footer>
-					</>
-				)}
-			</Modal.Content>
-		</Modal.Overlay>
+		<Modal>
+			{({ close }) => (
+				<>
+					<Modal.Header className="mb-2">
+						<Modal.Title>Create New Transaction</Modal.Title>
+						<Modal.Description className="text-sm text-muted-foreground">
+							Fill in the details of your new transaction.
+						</Modal.Description>
+					</Modal.Header>
+					<Form
+						id="form"
+						className="flex flex-col gap-4"
+						onSubmit={(e) => {
+							handleSubmit(e);
+							setFormData(init);
+							close();
+						}}
+					>
+						<div className="grid grid-cols-8 gap-4">
+							<NumberField
+								autoFocus
+								label="Amount"
+								className="col-span-3"
+								isRequired
+								formatOptions={{
+									style: "currency",
+									currency: "HKD",
+									currencySign: "standard",
+									currencyDisplay: "symbol",
+								}}
+								minValue={0}
+								value={form.amount}
+								onChange={(value) =>
+									value >= 0 && setFormData({ ...form, amount: value })
+								}
+							/>
+							<Select
+								label="Type"
+								placeholder="Type"
+								className="col-span-2"
+								isRequired
+								selectedKey={form.type}
+								onSelectionChange={(key) =>
+									setFormData({ ...form, type: key as CategoryType })
+								}
+							>
+								<Select.Item id={CategoryType.EXPENSE}>Expense</Select.Item>
+								<Select.Item id={CategoryType.INCOME}>Income</Select.Item>
+							</Select>
+							<Select
+								label="Category"
+								placeholder={
+									queryCategories.data?.categories.length ? "Category" : "None"
+								}
+								className="col-span-3"
+								isRequired
+								selectedKey={form.category}
+								onSelectionChange={(key) =>
+									setFormData({ ...form, category: key.toString() })
+								}
+							>
+								{(queryCategories.data?.categories ?? []).map((cat) => (
+									<Select.Item key={cat.id} id={cat.id}>
+										{cat.name}
+									</Select.Item>
+								))}
+							</Select>
+						</div>
+						<div className="grid grid-cols-8 gap-4">
+							<TextField
+								label="Title"
+								className="col-span-4"
+								isRequired
+								value={form.title}
+								onChange={(value) => setFormData({ ...form, title: value })}
+							/>
+							<DatePicker
+								label="Date Time"
+								className="col-span-4"
+								granularity="minute"
+								hideTimeZone
+								isRequired
+								minValue={startOfMonth(currentDateTime).set({
+									hour: 0,
+									minute: 0,
+								})}
+								maxValue={currentDateTime}
+								value={form.datetime}
+								onChange={(value) =>
+									value && setFormData({ ...form, datetime: value })
+								}
+							/>
+						</div>
+					</Form>
+					<Modal.Footer>
+						<Button onPress={close} type="button" variant="outline">
+							Cancel
+						</Button>
+						<Button type="submit" form="form">
+							Add Transaction
+						</Button>
+					</Modal.Footer>
+				</>
+			)}
+		</Modal>
 	);
 };
 
@@ -222,11 +227,14 @@ export function AppLayout() {
 		requestLogout()
 			.then(() => navigate("/login"))
 			.catch(({ message }) =>
-				toasts.add({
-					title: "Logout Failed",
-					description: message,
-					variant: "destructive",
-				}),
+				toasts.add(
+					{
+						title: "Logout Failed",
+						description: message,
+						variant: "destructive",
+					},
+					{ timeout: 5000 },
+				),
 			);
 	};
 
@@ -258,31 +266,31 @@ export function AppLayout() {
 					</Modal.Trigger>
 					<Menu.Trigger>
 						<Pressable>
-							{/* biome-ignore lint/a11y/useSemanticElements: required by react-aria-components */}
-							<Avatar className="cursor-pointer" role="button">
+							<button
+								type="button"
+								className="flex justify-center items-center rounded-[50%] h-9 w-9 bg-primary/10 select-none cursor-pointer"
+							>
 								{queryAccount.data?.account.fullname[0].toUpperCase()}
-							</Avatar>
+							</button>
 						</Pressable>
-						<Menu.Popover className="min-w-43">
-							<Menu className="space-y-0">
-								<Menu.Item className="flex flex-col items-start">
-									<p className="text-sm font-medium leading-none">
-										{queryAccount.data?.account.fullname}
-									</p>
-									<p className="text-xs text-muted-foreground leading-none">
-										{queryAccount.data?.account.email}
-									</p>
-								</Menu.Item>
-								<Menu.Separator />
-								<Menu.Item
-									onAction={handleLogout}
-									className="font-medium text-rose-500 focus:text-rose-500"
-								>
-									<LogOut className="size-4" />
-									Logout
-								</Menu.Item>
-							</Menu>
-						</Menu.Popover>
+						<Menu className="min-w-43">
+							<Menu.Item className="flex flex-col items-start">
+								<p className="text-sm font-medium leading-none">
+									{queryAccount.data?.account.fullname}
+								</p>
+								<p className="text-xs text-muted-foreground leading-none">
+									{queryAccount.data?.account.email}
+								</p>
+							</Menu.Item>
+							<Menu.Separator />
+							<Menu.Item
+								onAction={handleLogout}
+								className="font-medium text-rose-500 focus:text-rose-500"
+							>
+								<LogOut className="size-4" />
+								Logout
+							</Menu.Item>
+						</Menu>
 					</Menu.Trigger>
 				</div>
 			</header>

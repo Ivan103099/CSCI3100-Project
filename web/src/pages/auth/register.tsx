@@ -27,17 +27,23 @@ export default function AuthRegisterPage() {
 			fullname,
 		}).then(({ error }) => {
 			if (error)
-				toasts.add({
-					title: "Register Failed",
-					description: error.message,
-					variant: "destructive",
-				});
+				toasts.add(
+					{
+						title: "Register Failed",
+						description: error.message,
+						variant: "destructive",
+					},
+					{ timeout: 5000 },
+				);
 			else {
-				toasts.add({
-					title: "Register Success",
-					description: "Welcome to Finawise!",
-					variant: "success",
-				});
+				toasts.add(
+					{
+						title: "Register Success",
+						description: "Welcome to Finawise!",
+						variant: "success",
+					},
+					{ timeout: 5000 },
+				);
 				navigate("/login");
 			}
 		});

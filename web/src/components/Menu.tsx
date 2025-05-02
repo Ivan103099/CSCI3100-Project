@@ -2,29 +2,21 @@ import * as Aria from "react-aria-components";
 
 import { cn } from "@/lib/utils";
 
+import Popover from "@/components/Popover";
+
 const Menu = <T extends object>({ className, ...props }: Aria.MenuProps<T>) => (
-	<Aria.Menu
-		className={cn(
-			"max-h-[inherit] overflow-auto rounded-md p-1 outline-0",
-			className,
-		)}
-		{...props}
-	/>
+	<Popover>
+		<Aria.Menu
+			className={cn(
+				"max-h-[inherit] overflow-auto rounded-md p-1 outline-0",
+				className,
+			)}
+			{...props}
+		/>
+	</Popover>
 );
 
 Menu.Trigger = Aria.MenuTrigger;
-
-Menu.Popover = ({ className, offset = 4, ...props }: Aria.PopoverProps) => (
-	<Aria.Popover
-		offset={offset}
-		className={cn(
-			"w-auto z-50 border border-border bg-popover text-popover-foreground",
-			"rounded-md shadow-md outline-none min-w-(--trigger-width)",
-			className,
-		)}
-		{...props}
-	/>
-);
 
 Menu.Item = ({ children, className, ...props }: Aria.MenuItemProps) => (
 	<Aria.MenuItem

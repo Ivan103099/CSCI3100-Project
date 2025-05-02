@@ -3,6 +3,8 @@ import { Check, ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+import Popover from "./Popover";
+
 const Select = <T extends object>({
 	label,
 	items,
@@ -14,7 +16,7 @@ const Select = <T extends object>({
 	label?: string;
 	items?: Iterable<T>;
 	error?: string | ((validation: Aria.ValidationResult) => string);
-	children: React.ReactNode | ((item: T) => React.ReactNode);
+	children?: React.ReactNode | ((item: T) => React.ReactNode);
 }) => (
 	<Aria.Select
 		className={cn("group flex flex-col gap-2", className)}
@@ -37,17 +39,14 @@ const Select = <T extends object>({
 		<Aria.FieldError className="text-sm font-medium text-destructive">
 			{error}
 		</Aria.FieldError>
-		<Aria.Popover
-			offset={4}
-			className="z-50 bg-popover text-popover-foreground border border-border rounded-md shadow-md outline-none w-(--trigger-width)"
-		>
+		<Popover>
 			<Aria.ListBox
 				className="max-h-[inherit] overflow-auto p-1 outline-none"
 				items={items}
 			>
 				{children}
 			</Aria.ListBox>
-		</Aria.Popover>
+		</Popover>
 	</Aria.Select>
 );
 

@@ -4,64 +4,53 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Modal = ({
+	close = true,
 	children,
+	className,
 	...props
-}: React.ComponentProps<typeof Aria.Dialog>) => (
-	<Aria.Dialog {...props}>{children}</Aria.Dialog>
+}: Omit<React.ComponentProps<typeof Aria.Modal>, "children"> & {
+	close?: boolean;
+	children?: Aria.DialogProps["children"];
+}) => (
+	<Aria.ModalOverlay
+		isDismissable
+		className={cn(
+			"fixed inset-0 z-50 bg-black/80 duration-200",
+			"entering:opacity-50 exiting:opacity-0",
+		)}
+	>
+		<Aria.Modal
+			className={cn(
+				"fixed left-[50vw] top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 duration-200",
+				"w-full max-w-lg p-6 border border-border bg-background shadow-lg sm:rounded-lg md:w-full",
+				className,
+			)}
+			{...props}
+		>
+			<Aria.Dialog className={cn("grid h-full gap-4 outline-none")}>
+				{Aria.composeRenderProps(children, (children, { close: _close }) => (
+					<>
+						{children}
+						{close && (
+							<Aria.Button
+								onPress={_close}
+								className={cn(
+									"absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background",
+									"transition-opacity hover:opacity-100 cursor-pointer disabled:pointer-events-none",
+								)}
+							>
+								<X className="size-4" />
+								<span className="sr-only">Close</span>
+							</Aria.Button>
+						)}
+					</>
+				))}
+			</Aria.Dialog>
+		</Aria.Modal>
+	</Aria.ModalOverlay>
 );
 
 Modal.Trigger = Aria.DialogTrigger;
-
-Modal.Overlay = ({
-	className,
-	isDismissable = true,
-	...props
-}: Aria.ModalOverlayProps) => (
-	<Aria.ModalOverlay
-		isDismissable={isDismissable}
-		className={cn("fixed inset-0 z-50 bg-black/80", className)}
-		{...props}
-	/>
-);
-
-Modal.Content = ({
-	className,
-	children,
-	close = true,
-	...props
-}: {
-	close?: boolean;
-	children?: Aria.DialogProps["children"];
-} & Omit<React.ComponentProps<typeof Aria.Modal>, "children">) => (
-	<Aria.Modal
-		className={cn(
-			"fixed left-[50vw] top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 duration-200",
-			"w-full max-w-lg p-6 border border-border bg-background shadow-lg sm:rounded-lg md:w-full",
-			className,
-		)}
-		{...props}
-	>
-		<Aria.Dialog className={cn("grid h-full gap-4 outline-none")}>
-			{Aria.composeRenderProps(children, (children, { close: _close }) => (
-				<>
-					{children}
-					{close && (
-						<Aria.Button
-							onPress={_close}
-							className={cn(
-								"absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background",
-								"transition-opacity hover:opacity-100 cursor-pointer disabled:pointer-events-none",
-							)}
-						>
-							<X className="size-4" />
-							<span className="sr-only">Close</span>
-						</Aria.Button>
-					)}
-				</>
-			))}
-		</Aria.Dialog>
-	</Aria.Modal>
-);
 
 Modal.Header = ({ className, ...props }: React.ComponentProps<"div">) => (
 	<div

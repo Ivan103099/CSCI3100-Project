@@ -1,4 +1,7 @@
-export type CategoryType = "INCOME" | "EXPENSE";
+export enum CategoryType {
+	EXPENSE = "EXPENSE",
+	INCOME = "INCOME",
+}
 
 export type Account = {
 	id: number;
