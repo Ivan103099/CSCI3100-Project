@@ -2,35 +2,47 @@ directive @auth(enabled: Boolean!) on FIELD_DEFINITION
 
 directive @validate(tag: String!) on INPUT_FIELD_DEFINITION
 
-directive @goModel(
-	model: String
-	models: [String!]
-) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
-
-directive @goField(
-	forceResolver: Boolean
-	name: String
-	omittable: Boolean
-	type: String
+directive @goTag(
+	key: String!
+	value: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
-directive @goEnum(value: String) on ENUM_VALUE
+directive @goField(
+	name: String
+	type: String
+	omittable: Boolean
+	forceResolver: Boolean
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
-enum CategoryType @goModel(model: "finawise.app/server/models.CategoryType") {
-	INCOME @goEnum(value: "finawise.app/server/models.CategoryTypeIncome")
-	EXPENSE @goEnum(value: "finawise.app/server/models.CategoryTypeExpense")
-}
+directive @goExtraField(
+	name: String
+	type: String!
+	description: String
+	overrideTags: String
+) repeatable on OBJECT | INPUT_OBJECT
 
 scalar ULID
 scalar Timestamp
 
-type Account {
+enum CategoryType {
+	INCOME
+	EXPENSE
+}
+
+type Account
+	@goExtraField(
+		name: "Passhash"
+		type: "string"
+		overrideTags: "json:\"passhash\""
+	)
+{
 	id: ID!
-	group: Group!
+	gid: ID! @goField(name: "GroupID") @goTag(key: "json", value: "group_id")
 	email: String!
 	fullname: String!
 
-	summary: AccountSummary!
+	group: Group! @goField(forceResolver: true)
+	summary: AccountSummary! @goField(forceResolver: true)
 }
 
 type AccountSummary {
@@ -45,22 +57,28 @@ type Group {
 
 type Category {
 	id: ULID!
-	group: Group!
+	gid: ID! @goField(name: "GroupID") @goTag(key: "json", value: "group_id")
 	name: String!
 	type: CategoryType!
 	emoji: String!
 	color: String!
 
-	transactions: [Transaction!]!
+	group: Group! @goField(forceResolver: true)
+	transactions: [Transaction!]! @goField(forceResolver: true)
 }
 
 type Transaction {
 	id: ULID!
-	account: Account!
-	category: Category!
+	cid: ULID!
+		@goField(name: "CategoryID")
+		@goTag(key: "json", value: "category_id")
+	aid: ID! @goField(name: "AccountID") @goTag(key: "json", value: "account_id")
+	title: String!
 	amount: Float!
 	timestamp: Timestamp!
-	title: String!
+
+	category: Category! @goField(forceResolver: true)
+	account: Account! @goField(forceResolver: true)
 }
 
 type Query {
@@ -78,17 +96,17 @@ input CreateAccount {
 }
 
 input CreateCategory {
-	type: CategoryType! @validate(tag: "required,oneof=INCOME EXPENSE")
 	name: String! @validate(tag: "required,max=20,printascii")
+	type: CategoryType! @validate(tag: "required,oneof=INCOME EXPENSE")
 	emoji: String! @validate(tag: "required,min=1,max=4") # TODO: need stricter validation
 	color: String! @validate(tag: "required,hexcolor")
 }
 
 input CreateTransaction {
-	cid: ULID! @validate(tag: "required,ulid") @goField(name: "CID")
+	cid: ULID! @validate(tag: "required,ulid") @goField(name: "CategoryID")
+	title: String! @validate(tag: "required,max=30")
 	amount: Float! @validate(tag: "required,gt=0")
 	timestamp: Timestamp! @validate(tag: "required")
-	title: String! @validate(tag: "required,max=30")
 }
 
 type Mutation {

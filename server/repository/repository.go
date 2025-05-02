@@ -6,8 +6,10 @@ import (
 	_ "embed"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/jmoiron/sqlx/reflectx"
 	"github.com/tnychn/sq"
 	"modernc.org/sqlite"
 
@@ -83,6 +85,7 @@ func New(config config.Config) Repository {
 
 func (r *repository) Initialize() (err error) {
 	r.db, err = sqlx.Open("sqlite", r.config.Database.URL.String())
+	r.db.Mapper = reflectx.NewMapperFunc("json", strings.ToLower)
 	if err != nil {
 		return
 	}
@@ -207,7 +210,6 @@ func (r *repository) GetAccountSummary(aid int64) (as models.AccountSummary, err
 			- SUM(CASE WHEN c.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) AS balance`,
 		`IFNULL(SUM(CASE WHEN c.type = 'INCOME' THEN t.amount ELSE 0 END), 0) AS income`,
 		`IFNULL(SUM(CASE WHEN c.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) AS expense`,
-		`0 as budget`,
 	).
 		From("transactions t").
 		Join("categories c ON t.category_id = c.id").
@@ -227,15 +229,16 @@ func (r *repository) FindAccountByEmail(email string) (a models.Account, err err
 }
 
 func (r *repository) ListTransactions(aid int64, cid *types.ID, ct *models.CategoryType) (results []models.Transaction, err error) {
-	b := SQL.Select("t.id", "t.account_id", "t.category_id", "t.amount", "t.timestamp", "t.title").
-		Where(sq.Eq{"t.account_id": aid}).
+	b := SQL.Select("t.*").
 		From("transactions t").
+		Where(sq.Eq{"t.account_id": aid}).
 		OrderBy("t.timestamp DESC")
 	if cid != nil {
 		b = b.Where(sq.Eq{"t.category_id": cid})
 	}
 	if ct != nil {
-		b = b.Join("categories c ON t.category_id = c.id").Where(sq.Eq{"c.type": *ct})
+		b = b.Join("categories c ON t.category_id = c.id").
+			Where(sq.Eq{"c.type": *ct})
 	}
 	s, args := b.MustSQL()
 	err = r.db.Select(&results, s, args...)

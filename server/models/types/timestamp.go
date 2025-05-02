@@ -41,5 +41,5 @@ func (t *Timestamp) UnmarshalGQL(v any) error {
 }
 
 func (t Timestamp) MarshalGQL(w io.Writer) {
-	w.Write(fmt.Append(nil, t.Unix()))
+	fmt.Fprint(w, t.Unix())
 }

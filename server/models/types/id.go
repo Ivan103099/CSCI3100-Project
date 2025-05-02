@@ -3,6 +3,7 @@ package types
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -62,5 +63,5 @@ func (id *ID) UnmarshalGQL(v any) error {
 }
 
 func (id ID) MarshalGQL(w io.Writer) {
-	w.Write([]byte(strconv.Quote(id.String())))
+	fmt.Fprint(w, strconv.Quote(id.String()))
 }

@@ -34,12 +34,12 @@ func (r *categoryResolver) Transactions(ctx context.Context, obj *models.Categor
 }
 
 // CreateAccount is the resolver for the createAccount field.
-func (r *mutationResolver) CreateAccount(ctx context.Context, a CreateAccount) (models.Account, error) {
+func (r *mutationResolver) CreateAccount(ctx context.Context, a models.CreateAccount) (models.Account, error) {
 	return r.AccountService.Register(a.Email, a.Password, a.Fullname)
 }
 
 // CreateCategory is the resolver for the createCategory field.
-func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory) (cat models.Category, err error) {
+func (r *mutationResolver) CreateCategory(ctx context.Context, c models.CreateCategory) (cat models.Category, err error) {
 	session := ctx.Value("session").(account.Session)
 	cat = models.Category{
 		GroupID: session.GroupID,
@@ -57,14 +57,14 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory)
 }
 
 // CreateTransaction is the resolver for the createTransaction field.
-func (r *mutationResolver) CreateTransaction(ctx context.Context, t CreateTransaction) (txn models.Transaction, err error) {
+func (r *mutationResolver) CreateTransaction(ctx context.Context, t models.CreateTransaction) (txn models.Transaction, err error) {
 	session := ctx.Value("session").(account.Session)
 	txn = models.Transaction{
+		CategoryID: t.CategoryID,
 		AccountID:  session.AccountID,
-		CategoryID: t.CID,
+		Title:      t.Title,
 		Amount:     t.Amount,
 		Timestamp:  t.Timestamp,
-		Title:      t.Title,
 	}
 	id, err := r.Repository.CreateTransaction(txn)
 	if err != nil {
@@ -102,14 +102,14 @@ func (r *queryResolver) Transactions(ctx context.Context, ct *models.CategoryTyp
 	return r.Repository.ListTransactions(session.AccountID, nil, ct)
 }
 
-// Account is the resolver for the account field.
-func (r *transactionResolver) Account(ctx context.Context, obj *models.Transaction) (models.Account, error) {
-	return r.Repository.GetAccount(obj.AccountID)
-}
-
 // Category is the resolver for the category field.
 func (r *transactionResolver) Category(ctx context.Context, obj *models.Transaction) (models.Category, error) {
 	return r.Repository.GetCategory(obj.CategoryID)
+}
+
+// Account is the resolver for the account field.
+func (r *transactionResolver) Account(ctx context.Context, obj *models.Transaction) (models.Account, error) {
+	return r.Repository.GetAccount(obj.AccountID)
 }
 
 // Account returns AccountResolver implementation.
