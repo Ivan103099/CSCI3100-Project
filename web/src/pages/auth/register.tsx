@@ -59,10 +59,10 @@ export default function AuthRegisterPage() {
 					<TextField
 						type="email"
 						label="Email"
+						placeholder="name@example.com"
 						isRequired
 						value={email}
 						onChange={setEmail}
-						placeholder="name@example.com"
 					/>
 					<TextField
 						type="password"

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { CategoryType, type Transaction } from "@/lib/models";
+import { CategoryType } from "@/lib/models";
 import { useCategoriesQuery, useTransactionsQuery } from "@/lib/graphql";
 
 import Menu from "@/components/Menu";
@@ -80,6 +80,7 @@ const FiltersCard = ({
 						onFiltersChange({
 							...filters,
 							type:
+								// FIXME: this is a bit hacky
 								queryCategories.data?.categories.find(
 									(cat) => cat.id === key.toString(),
 								)?.type ?? filters.type,
@@ -97,12 +98,7 @@ const FiltersCard = ({
 				</Select>
 				<NumberField
 					label="Min. Amount"
-					formatOptions={{
-						style: "currency",
-						currency: "HKD",
-						currencySign: "standard",
-						currencyDisplay: "symbol",
-					}}
+					className="col-span-1"
 					minValue={0}
 					maxValue={filters.maxAmount}
 					value={filters.minAmount}
@@ -110,28 +106,32 @@ const FiltersCard = ({
 						value <= filters.maxAmount &&
 						onFiltersChange({ ...filters, minAmount: value })
 					}
-					className="col-span-1"
-				/>
-				<NumberField
-					label="Max. Amount"
 					formatOptions={{
 						style: "currency",
 						currency: "HKD",
 						currencySign: "standard",
 						currencyDisplay: "symbol",
 					}}
+				/>
+				<NumberField
+					label="Max. Amount"
+					className="col-span-1"
 					minValue={filters.minAmount}
 					maxValue={Number.POSITIVE_INFINITY}
 					value={filters.maxAmount}
-					onChange={(value) => {
-						if (value >= filters.minAmount)
-							return onFiltersChange({ ...filters, maxAmount: value });
-						return onFiltersChange({
+					onChange={(value) =>
+						onFiltersChange({
 							...filters,
-							maxAmount: Number.POSITIVE_INFINITY,
-						});
+							maxAmount:
+								value >= filters.minAmount ? value : Number.POSITIVE_INFINITY,
+						})
+					}
+					formatOptions={{
+						style: "currency",
+						currency: "HKD",
+						currencySign: "standard",
+						currencyDisplay: "symbol",
 					}}
-					className="col-span-1"
 				/>
 			</Card.Content>
 		</Card>
@@ -143,11 +143,11 @@ export default function AppTransactionsPage() {
 	const [filters, setFilters] = React.useState(initFilters());
 	const [selection, setSelection] = React.useState("");
 
-	const [queryTransactions] = useTransactionsQuery();
+	const [query] = useTransactionsQuery();
 
 	const transactions = React.useMemo(
 		() =>
-			(queryTransactions.data?.transactions ?? [])
+			(query.data?.transactions ?? [])
 				.filter((item) => {
 					if (!search) return true;
 					return item.title.toLowerCase().includes(search.toLowerCase());
@@ -163,14 +163,13 @@ export default function AppTransactionsPage() {
 				})
 				.map((item) => ({
 					...item,
+					// for convenience to be used in below code
 					datetime: new Date(item.timestamp * 1000),
 				})),
-		[queryTransactions.data, search, filters],
+		[query.data, search, filters],
 	);
 
-	if (queryTransactions.error) {
-		return <></>;
-	}
+	if (query.error) return <></>;
 	return (
 		<main className="flex-1 flex flex-col p-4 md:p-8 space-y-4">
 			<div className="flex items-center justify-between">
@@ -189,10 +188,10 @@ export default function AppTransactionsPage() {
 			</div>
 			<div className="flex items-center gap-2">
 				<SearchField
+					placeholder="Search Transactions..."
 					className="w-full"
 					value={search}
 					onChange={setSearch}
-					placeholder="Search Transactions..."
 				/>
 				<Button variant="outline">
 					<Calendar className="size-4" />
@@ -224,10 +223,10 @@ export default function AppTransactionsPage() {
 							<>
 								<Table.Row
 									key={item.id}
-									onAction={() => {
-										setSelection((prev) => (prev === item.id ? "" : item.id));
-									}}
 									className={cn(item.id === selection && "bg-muted")}
+									onAction={() =>
+										setSelection((prev) => (prev === item.id ? "" : item.id))
+									}
 								>
 									<Table.Cell className="font-medium">{item.title}</Table.Cell>
 									<Table.Cell>
@@ -270,8 +269,8 @@ export default function AppTransactionsPage() {
 												</Menu.Item>
 												<Menu.Separator />
 												<Menu.Item
-													onAction={() => ({})}
 													className="font-medium text-rose-500 focus:text-rose-500"
+													onAction={() => ({})}
 												>
 													<Trash className="size-4" />
 													Delete

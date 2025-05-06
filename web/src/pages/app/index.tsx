@@ -61,9 +61,7 @@ const SummaryCards = () => {
 		return { balance, income, expense, average };
 	}, [query.data, days]);
 
-	if (query.error) {
-		return <></>;
-	}
+	if (query.error) return <></>;
 	return (
 		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 			{Object.entries(summary)
@@ -73,7 +71,11 @@ const SummaryCards = () => {
 					return (
 						<Card
 							key={key}
-							className={`border-t-4 ${border} bg-gradient-to-br transition-all hover:shadow-lg hover:-translate-y-1 from-card to-background`}
+							className={cn(
+								"border-t-4 bg-gradient-to-br",
+								"transition-all hover:shadow-lg hover:-translate-y-1",
+								border,
+							)}
 						>
 							<Card.Header className="flex-row items-center justify-between space-y-0 pb-2">
 								<Card.Title className="text-md font-medium">{title}</Card.Title>
@@ -104,9 +106,7 @@ const RecentTransactions = () => {
 
 	const [query] = useTransactionsQuery();
 
-	if (query.error) {
-		return <></>;
-	}
+	if (query.error) return <></>;
 	return (
 		<Card className="flex flex-col h-full">
 			<Card.Header>
@@ -120,7 +120,7 @@ const RecentTransactions = () => {
 				{query.data?.transactions.slice(0, 5).map((item) => (
 					<li key={item.id} className="flex items-center py-4">
 						<span
-							className="flex items-center justify-center size-10 min-w-10 rounded-xl text-xl"
+							className="flex items-center justify-center size-10 min-w-10 text-xl rounded-xl"
 							style={{ backgroundColor: item.category.color }}
 						>
 							{item.category.emoji}
@@ -150,9 +150,9 @@ const RecentTransactions = () => {
 			</Card.Content>
 			<Card.Footer>
 				<Button
+					className="w-full"
 					variant="outline"
 					size="sm"
-					className="w-full"
 					onPress={() => navigate("/transactions")}
 				>
 					View All Transactions
@@ -167,15 +167,17 @@ const CategorizedBreakdown = () => {
 
 	const [query] = useCategoriesQuery(type);
 
-	const chart = React.useMemo(() => {
-		return (query.data?.categories ?? []).reduce(
-			(result, cat) => {
-				result[cat.name] = { label: cat.name };
-				return result;
-			},
-			{} as Record<string, { label: string }>,
-		);
-	}, [query.data]);
+	const chart = React.useMemo(
+		() =>
+			(query.data?.categories ?? []).reduce(
+				(result, cat) => {
+					result[cat.name] = { label: cat.name };
+					return result;
+				},
+				{} as Record<string, { label: string }>,
+			),
+		[query.data],
+	);
 
 	const data = React.useMemo(
 		() =>
@@ -200,11 +202,9 @@ const CategorizedBreakdown = () => {
 		[type, data],
 	);
 
-	if (query.error) {
-		return <></>;
-	}
+	if (query.error) return <></>;
 	return (
-		<Card className="h-full">
+		<Card className="flex flex-col h-full">
 			<Card.Header className="flex-row items-center justify-between gap-2">
 				<div className="space-y-1.5">
 					<Card.Title>Categorized Breakdown</Card.Title>
@@ -220,12 +220,6 @@ const CategorizedBreakdown = () => {
 					<Select.Item id={CategoryType.EXPENSE}>Expense</Select.Item>
 					<Select.Item id={CategoryType.INCOME}>Income</Select.Item>
 				</Select>
-				{/* <Tabs>
-					<Tabs.Nav className="self-start">
-						<Tabs.NavItem id="EXPENSE">Expense</Tabs.NavItem>
-						<Tabs.NavItem id="INCOME">Income</Tabs.NavItem>
-					</Tabs.Nav>
-				</Tabs> */}
 			</Card.Header>
 			<Card.Content>
 				<ChartContainer
@@ -262,9 +256,9 @@ const BudgetPlan = () => {
 			<Card.Content>{}</Card.Content>
 			<Card.Footer>
 				<Button
+					className="w-full"
 					variant="outline"
 					size="sm"
-					className="w-full"
 					onPress={() => navigate("/budgets")}
 				>
 					View Details
@@ -285,6 +279,7 @@ const DailyBalance = () => {
 		[],
 	);
 
+	// FIXME: this is a bit messy
 	const data = React.useMemo(() => {
 		const current = now(getLocalTimeZone());
 		const incomes = (query.data?.transactions ?? []).filter(
@@ -363,12 +358,7 @@ const DailyBalance = () => {
 export default function AppDashboardPage() {
 	const account = useAtomValue($account);
 
-	const currentMonthYear = React.useMemo(() => {
-		const date = new Date();
-		const year = date.getFullYear();
-		const month = date.toLocaleString("en-HK", { month: "long" });
-		return { year, month };
-	}, []);
+	const date = React.useMemo(() => new Date(), []);
 
 	return (
 		<main className="flex-1 p-4 md:p-8 space-y-4">
@@ -382,7 +372,7 @@ export default function AppDashboardPage() {
 				<div className="flex items-center gap-2">
 					<Button variant="outline">
 						<Calendar className="size-4" />
-						{`${currentMonthYear.month} ${currentMonthYear.year}`}
+						{`${date.toLocaleString("en-HK", { month: "long" })} ${date.getFullYear()}`}
 					</Button>
 				</div>
 			</div>

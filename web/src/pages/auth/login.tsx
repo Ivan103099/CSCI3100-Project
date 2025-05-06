@@ -45,10 +45,10 @@ export default function AuthLoginPage() {
 					<TextField
 						type="email"
 						label="Email"
+						placeholder="name@example.com"
 						isRequired
 						value={email}
 						onChange={setEmail}
-						placeholder="name@example.com"
 					/>
 					<TextField
 						type="password"
@@ -65,22 +65,22 @@ export default function AuthLoginPage() {
 			<Card.Footer className="flex-col gap-5">
 				<Button
 					type="button"
-					variant="outline"
 					className="w-full"
+					variant="outline"
 					onPress={() => navigate("/register")}
 				>
 					Register
 				</Button>
-				<span className="block text-sm text-center">
+				<div className="text-sm text-center">
 					Forgot your password?
 					<Button
 						variant="link"
-						className="w-0 h-0 ml-2"
+						className="size-0 ml-2"
 						onPress={() => navigate("/reset")}
 					>
 						Reset
 					</Button>
-				</span>
+				</div>
 			</Card.Footer>
 		</Card>
 	);

@@ -3,7 +3,6 @@ import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { useSetAtom } from "jotai";
 import {
 	now,
-	startOfMonth,
 	getLocalTimeZone,
 	type ZonedDateTime,
 } from "@internationalized/date";
@@ -33,6 +32,10 @@ import NumberField from "@/components/NumberField";
 import Select from "@/components/Select";
 import DatePicker from "@/components/DatePicker";
 import { toasts } from "@/components/Toast";
+
+export { default as AppDashboardPage } from "./app/index";
+export { default as AppTransactionsPage } from "./app/transactions";
+export { default as AppCategoriesPage } from "./app/categories";
 
 const LINKS = [
 	{
@@ -76,10 +79,18 @@ const initTransactionForm = (): TransactionForm => ({
 const TransactionModal = () => {
 	const [form, setFormData] = React.useState(initTransactionForm());
 
+	const [queryCategories] = useCategoriesQuery();
+	const [, createTransaction] = useCreateTransactionMutation();
+
 	const currentDateTime = React.useMemo(() => now(getLocalTimeZone()), []);
 
-	const [queryCategories] = useCategoriesQuery(form.type || undefined);
-	const [, createTransaction] = useCreateTransactionMutation();
+	const categories = React.useMemo(
+		() =>
+			(queryCategories.data?.categories ?? []).filter(
+				(cat) => cat.type === form.type,
+			),
+		[queryCategories.data, form.type],
+	);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -134,32 +145,30 @@ const TransactionModal = () => {
 					>
 						<div className="grid grid-cols-8 gap-4">
 							<NumberField
-								autoFocus
-								label="Amount"
 								className="col-span-3"
+								label="Amount"
+								autoFocus
 								isRequired
+								minValue={0}
+								value={form.amount}
+								onChange={(value) => setFormData({ ...form, amount: value })}
 								formatOptions={{
 									style: "currency",
 									currency: "HKD",
 									currencySign: "standard",
 									currencyDisplay: "symbol",
 								}}
-								minValue={0}
-								value={form.amount}
-								onChange={(value) =>
-									value >= 0 && setFormData({ ...form, amount: value })
-								}
 							/>
 							<Select
+								className="col-span-2"
 								label="Type"
 								placeholder="Type"
-								className="col-span-2"
 								isRequired
 								selectedKey={form.type}
 								onSelectionChange={(key) =>
 									setFormData({
 										...form,
-										category: "",
+										category: "", // reset category when type changes
 										type: key as CategoryType,
 									})
 								}
@@ -168,18 +177,16 @@ const TransactionModal = () => {
 								<Select.Item id={CategoryType.INCOME}>Income</Select.Item>
 							</Select>
 							<Select
-								label="Category"
-								placeholder={
-									queryCategories.data?.categories.length ? "Category" : "None"
-								}
 								className="col-span-3"
+								label="Category"
+								placeholder="Category"
 								isRequired
 								selectedKey={form.category}
 								onSelectionChange={(key) =>
 									setFormData({ ...form, category: key.toString() })
 								}
 							>
-								{(queryCategories.data?.categories ?? []).map((cat) => (
+								{categories.map((cat) => (
 									<Select.Item key={cat.id} id={cat.id}>
 										{cat.emoji}
 										<span className="ml-1.5">{cat.name}</span>
@@ -189,27 +196,23 @@ const TransactionModal = () => {
 						</div>
 						<div className="grid grid-cols-8 gap-4">
 							<TextField
-								label="Title"
 								className="col-span-4"
+								label="Title"
 								isRequired
 								value={form.title}
 								onChange={(value) => setFormData({ ...form, title: value })}
 							/>
 							<DatePicker
-								label="Date Time"
 								className="col-span-4"
-								granularity="minute"
-								hideTimeZone
+								label="Date Time"
 								isRequired
-								minValue={startOfMonth(currentDateTime).set({
-									hour: 0,
-									minute: 0,
-								})}
+								hideTimeZone
+								granularity="minute"
 								maxValue={currentDateTime}
 								value={form.datetime}
-								onChange={(value) =>
-									value && setFormData({ ...form, datetime: value })
-								}
+								onChange={(value) => {
+									if (value) setFormData({ ...form, datetime: value });
+								}}
 							/>
 						</div>
 					</Form>
@@ -233,9 +236,13 @@ export function AppLayout() {
 
 	const setAccount = useSetAtom($account);
 
+	const requestLogout = useLogoutRequest();
 	const [queryAccount] = useAccountQuery();
 
-	const requestLogout = useLogoutRequest();
+	const account = React.useMemo(
+		() => queryAccount.data?.account,
+		[queryAccount.data],
+	);
 
 	const handleLogout = () => {
 		requestLogout()
@@ -253,19 +260,15 @@ export function AppLayout() {
 	};
 
 	React.useEffect(() => {
-		if (!queryAccount.fetching && !queryAccount.error) {
+		// update account atom when account query is successful
+		if (!queryAccount.fetching && !queryAccount.error)
 			setAccount(queryAccount.data?.account);
-		}
 	}, [queryAccount, setAccount]);
 
-	if (queryAccount.fetching) {
-		return <></>;
-	}
-	if (queryAccount.error) {
-		return <Navigate to="/login" />;
-	}
+	if (queryAccount.fetching) return <></>;
+	if (queryAccount.error) return <Navigate to="/login" />;
 	return (
-		<div className="h-full w-full flex flex-col">
+		<div className="flex flex-col">
 			<header className="sticky top-0 z-10 py-2 px-5 flex items-center shadow-sm border-b border-border bg-background">
 				<span className="text-lg font-bold font-display tracking-tight select-none">
 					FINAWISE
@@ -282,19 +285,19 @@ export function AppLayout() {
 						<Pressable>
 							<button
 								type="button"
-								className="flex justify-center items-center rounded-[50%] h-9 w-9 bg-primary/10 select-none cursor-pointer"
+								className="flex justify-center items-center bg-primary/10 rounded-[50%] size-9 select-none cursor-pointer"
 							>
-								{queryAccount.data?.account.fullname[0].toUpperCase()}
+								{account?.fullname[0].toUpperCase()}
 							</button>
 						</Pressable>
 						<Menu className="min-w-43">
 							<Menu.Item className="flex flex-col items-start">
-								<p className="text-sm font-medium leading-none">
-									{queryAccount.data?.account.fullname}
-								</p>
-								<p className="text-xs text-muted-foreground leading-none">
-									{queryAccount.data?.account.email}
-								</p>
+								<span className="text-sm font-medium leading-none">
+									{account?.fullname}
+								</span>
+								<span className="text-xs text-muted-foreground leading-none">
+									{account?.email}
+								</span>
 							</Menu.Item>
 							<Menu.Separator />
 							<Menu.Item
@@ -309,13 +312,13 @@ export function AppLayout() {
 				</div>
 			</header>
 			<div className="flex-1 flex">
-				<aside className="sticky top-[3.3rem] h-[calc(100vh-3.3rem)] flex flex-col w-[200px] p-5 border-r border-border overflow-y-auto">
-					<nav className="grid gap-2">
+				<aside className="sticky top-[3.3rem] h-[calc(100vh-3.3rem)] p-5 border-r border-border overflow-y-auto">
+					<nav className="flex flex-col gap-2">
 						{LINKS.map((link) => (
 							<Button
 								key={link.href}
-								variant={link.href === location.pathname ? "default" : "ghost"}
 								className="justify-start"
+								variant={link.href === location.pathname ? "default" : "ghost"}
 								onPress={() => navigate(link.href)}
 							>
 								<link.Icon className="mr-2 size-4" />
@@ -329,7 +332,3 @@ export function AppLayout() {
 		</div>
 	);
 }
-
-export { default as AppDashboardPage } from "./app/index";
-export { default as AppTransactionsPage } from "./app/transactions";
-export { default as AppCategoriesPage } from "./app/categories";
