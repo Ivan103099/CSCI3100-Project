@@ -31,5 +31,4 @@ export type Transaction = {
 export type AccountSummary = {
 	income: number;
 	expense: number;
-	balance: number;
 };

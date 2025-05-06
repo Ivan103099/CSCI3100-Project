@@ -63,7 +63,6 @@ type ComplexityRoot struct {
 	}
 
 	AccountSummary struct {
-		Balance func(childComplexity int) int
 		Expense func(childComplexity int) int
 		Income  func(childComplexity int) int
 	}
@@ -194,13 +193,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Account.Summary(childComplexity), true
-
-	case "AccountSummary.balance":
-		if e.complexity.AccountSummary.Balance == nil {
-			break
-		}
-
-		return e.complexity.AccountSummary.Balance(childComplexity), true
 
 	case "AccountSummary.expense":
 		if e.complexity.AccountSummary.Expense == nil {
@@ -1156,58 +1148,12 @@ func (ec *executionContext) fieldContext_Account_summary(_ context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "balance":
-				return ec.fieldContext_AccountSummary_balance(ctx, field)
 			case "income":
 				return ec.fieldContext_AccountSummary_income(ctx, field)
 			case "expense":
 				return ec.fieldContext_AccountSummary_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AccountSummary", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AccountSummary_balance(ctx context.Context, field graphql.CollectedField, obj *models.AccountSummary) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AccountSummary_balance(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Balance, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AccountSummary_balance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AccountSummary",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5474,11 +5420,6 @@ func (ec *executionContext) _AccountSummary(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("AccountSummary")
-		case "balance":
-			out.Values[i] = ec._AccountSummary_balance(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "income":
 			out.Values[i] = ec._AccountSummary_income(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

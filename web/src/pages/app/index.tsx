@@ -1,15 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { useAtomValue } from "jotai";
+import { fromAbsolute, getLocalTimeZone, now } from "@internationalized/date";
 import { PieChart, Pie, BarChart, CartesianGrid, XAxis, Bar } from "recharts";
-import {
-	fromAbsolute,
-	getLocalTimeZone,
-	getMinimumDayInMonth,
-	GregorianCalendar,
-	isSameDay,
-	now,
-} from "@internationalized/date";
 import { Calendar, ArrowDown, ArrowUp, Coins, DollarSign } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -62,8 +55,10 @@ const SummaryCards = () => {
 
 	const summary = React.useMemo(() => {
 		if (!query.data) return {};
-		const average = query.data.account.summary.balance / days;
-		return { ...query.data.account.summary, average };
+		const { income, expense } = query.data.account.summary;
+		const balance = income - expense;
+		const average = balance / days;
+		return { balance, income, expense, average };
 	}, [query.data, days]);
 
 	if (query.error) {

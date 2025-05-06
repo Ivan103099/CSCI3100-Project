@@ -46,7 +46,6 @@ type Account
 }
 
 type AccountSummary {
-	balance: Float!
 	income: Float!
 	expense: Float!
 }

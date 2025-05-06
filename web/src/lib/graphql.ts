@@ -58,7 +58,6 @@ export const useAccountSummaryQuery = () =>
       query {
         account {
           summary {
-            balance
             income
             expense
             # budget
