@@ -20,9 +20,7 @@ const EmojiPicker = ({
 		<Aria.DialogTrigger>
 			<Button variant="outline" className="font-normal outline-none">
 				<span className="text-2xl">{selected?.emoji}</span>
-				<span className="text-xs overflow-hidden text-ellipsis">
-					{selected?.label}
-				</span>
+				<span className="text-xs truncate">{selected?.label}</span>
 			</Button>
 			<Popover className="min-w-(--trigger-width)">
 				<Aria.Dialog className="outline-none">

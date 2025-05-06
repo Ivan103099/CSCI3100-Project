@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 
 const TextField = ({
 	label,
-	prefix,
 	placeholder,
 	description,
 	error,
@@ -12,7 +11,6 @@ const TextField = ({
 	...props
 }: Aria.TextFieldProps & {
 	label?: string;
-	prefix?: string;
 	placeholder?: string;
 	description?: string;
 	error?: string | ((validation: Aria.ValidationResult) => string);
@@ -21,9 +19,11 @@ const TextField = ({
 		className={cn("group flex flex-col gap-2", className)}
 		{...props}
 	>
-		<Aria.Label className="text-sm font-medium leading-none disabled:cursor-not-allowed disabled:opacity-70">
-			{label}
-		</Aria.Label>
+		{label && (
+			<Aria.Label className="text-sm font-medium leading-none disabled:cursor-not-allowed disabled:opacity-70">
+				{label}
+			</Aria.Label>
+		)}
 		<Aria.Input
 			className={cn(
 				"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground",

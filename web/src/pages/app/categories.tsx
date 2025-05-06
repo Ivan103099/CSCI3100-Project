@@ -1,8 +1,8 @@
 import React from "react";
-import { Label, Form, parseColor } from "react-aria-components";
+import { Label, Form, parseColor, type Color } from "react-aria-components";
 import { Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
 
-import { CategoryType } from "@/lib/models";
+import { type Transaction, type Category, CategoryType } from "@/lib/models";
 import { useCategoriesQuery, useCreateCategoryMutation } from "@/lib/graphql";
 
 import Tabs from "@/components/Tabs";
@@ -17,14 +17,22 @@ import ColorPicker from "@/components/ColorPicker";
 import EmojiPicker from "@/components/EmojiPicker";
 import { toasts } from "@/components/Toast";
 
+type CategoryForm = {
+	name: string;
+	type: CategoryType;
+	color: Color;
+	emoji: { emoji: string; label: string };
+};
+
+const initCategoryForm = (): CategoryForm => ({
+	name: "",
+	type: CategoryType.EXPENSE,
+	color: parseColor("#000000"),
+	emoji: { emoji: "🪙", label: "Coin" },
+});
+
 const CategoryModal = () => {
-	const init = {
-		name: "",
-		emoji: { emoji: "🪙", label: "Coin" },
-		color: parseColor("#000000"),
-		type: CategoryType.EXPENSE,
-	};
-	const [form, setFormData] = React.useState(init);
+	const [form, setFormData] = React.useState(initCategoryForm());
 
 	const [, createCategory] = useCreateCategoryMutation();
 
@@ -71,9 +79,9 @@ const CategoryModal = () => {
 						id="form"
 						className="flex flex-col gap-4"
 						onSubmit={(e) => {
-							handleSubmit(e);
-							setFormData(init);
 							close();
+							handleSubmit(e);
+							setFormData(initCategoryForm());
 						}}
 					>
 						<TextField
@@ -131,6 +139,58 @@ const CategoryModal = () => {
 	);
 };
 
+const CategoryCard = ({
+	category,
+}: { category: Category & { transactions: Transaction[] } }) => (
+	<Card className="transition-all hover:shadow-lg hover:-translate-y-1 w-full">
+		<Card.Content className="pt-5">
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-3 overflow-hidden">
+					<span
+						className="flex items-center justify-center size-10 min-w-10 rounded-xl text-xl"
+						style={{ backgroundColor: category.color }}
+					>
+						{category.emoji}
+					</span>
+					<p className="text-xl font-medium truncate">{category.name}</p>
+				</div>
+				<Menu.Trigger>
+					<Button variant="ghost" className="p-2 h-5">
+						<MoreHorizontal className="size-4" />
+					</Button>
+					<Menu className="min-w-28">
+						<Menu.Item onAction={() => ({})}>
+							<Edit className="size-4" />
+							Edit
+						</Menu.Item>
+						<Menu.Separator />
+						<Menu.Item
+							onAction={() => ({})}
+							className="font-medium text-rose-500 focus:text-rose-500"
+						>
+							<Trash className="size-4" />
+							Delete
+						</Menu.Item>
+					</Menu>
+				</Menu.Trigger>
+			</div>
+		</Card.Content>
+		<Card.Footer className="flex justify-between items-center gap-3 py-3 rounded-b-md bg-secondary">
+			<span className="font-medium text-sm truncate">
+				{category.transactions.length} Transactions
+			</span>
+			<span className="font-bold text-lg">
+				{category.transactions
+					.reduce((sum, t) => sum + t.amount, 0)
+					.toLocaleString("en-HK", {
+						style: "currency",
+						currency: "HKD",
+					})}
+			</span>
+		</Card.Footer>
+	</Card>
+);
+
 export default function AppCategoriesPage() {
 	const [tab, setTab] = React.useState("ALL");
 	const [search, setSearch] = React.useState("");
@@ -150,7 +210,7 @@ export default function AppCategoriesPage() {
 
 	return (
 		<main className="flex-1 p-4 md:p-8 space-y-4">
-			<div className="flex items-center justify-between px-2 pb-2">
+			<div className="flex items-center justify-between">
 				<div className="flex flex-col gap-2">
 					<div className="text-4xl">Categories</div>
 					<div className="text-lg text-muted-foreground">
@@ -186,59 +246,7 @@ export default function AppCategoriesPage() {
 					className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
 				>
 					{categories.map((category) => (
-						<Card
-							key={category.id}
-							className="transition-all hover:shadow-lg hover:-translate-y-1 w-full"
-						>
-							<Card.Content className="pt-5 relative">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-3 overflow-hidden mr-10">
-										<span
-											className="flex items-center justify-center size-10 min-w-10 rounded-xl text-xl"
-											style={{ backgroundColor: category.color }}
-										>
-											{category.emoji}
-										</span>
-										<p className="text-xl font-medium">{category.name}</p>
-									</div>
-									<Menu.Trigger>
-										<Button
-											variant="ghost"
-											className="absolute right-5 p-2 h-5"
-										>
-											<MoreHorizontal className="size-4" />
-										</Button>
-										<Menu className="min-w-28">
-											<Menu.Item onAction={() => ({})}>
-												<Edit className="size-4" />
-												Edit
-											</Menu.Item>
-											<Menu.Separator />
-											<Menu.Item
-												onAction={() => ({})}
-												className="font-medium text-rose-500 focus:text-rose-500"
-											>
-												<Trash className="size-4" />
-												Delete
-											</Menu.Item>
-										</Menu>
-									</Menu.Trigger>
-								</div>
-							</Card.Content>
-							<Card.Footer className="flex justify-between items-center gap-3 py-3 rounded-b-md bg-secondary overflow-x-scroll">
-								<span className="font-medium text-sm text-nowrap">
-									{category.transactions.length} Transactions
-								</span>
-								<span className="font-bold text-lg">
-									{category.transactions
-										.reduce((sum, t) => sum + t.amount, 0)
-										.toLocaleString("en-HK", {
-											style: "currency",
-											currency: "HKD",
-										})}
-								</span>
-							</Card.Footer>
-						</Card>
+						<CategoryCard key={category.id} category={category} />
 					))}
 				</Tabs.Content>
 			</Tabs>

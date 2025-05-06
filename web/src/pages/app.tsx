@@ -1,7 +1,12 @@
 import React from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { useSetAtom } from "jotai";
-import { getLocalTimeZone, startOfMonth, now } from "@internationalized/date";
+import {
+	now,
+	startOfMonth,
+	getLocalTimeZone,
+	type ZonedDateTime,
+} from "@internationalized/date";
 import { Pressable, Form } from "react-aria-components";
 import {
 	CreditCard,
@@ -52,17 +57,26 @@ const LINKS = [
 	},
 ];
 
-const TransactionModal = () => {
-	const currentDateTime = React.useMemo(() => now(getLocalTimeZone()), []);
+type TransactionForm = {
+	type: CategoryType;
+	category: string;
+	title: string;
+	amount: number;
+	datetime: ZonedDateTime;
+};
 
-	const init = {
-		type: CategoryType.EXPENSE,
-		category: "",
-		title: "",
-		datetime: currentDateTime,
-		amount: 0,
-	};
-	const [form, setFormData] = React.useState(init);
+const initTransactionForm = (): TransactionForm => ({
+	type: CategoryType.EXPENSE,
+	category: "",
+	title: "",
+	amount: 0,
+	datetime: now(getLocalTimeZone()),
+});
+
+const TransactionModal = () => {
+	const [form, setFormData] = React.useState(initTransactionForm());
+
+	const currentDateTime = React.useMemo(() => now(getLocalTimeZone()), []);
 
 	const [queryCategories] = useCategoriesQuery(form.type || undefined);
 	const [, createTransaction] = useCreateTransactionMutation();
@@ -99,11 +113,6 @@ const TransactionModal = () => {
 		});
 	};
 
-	React.useEffect(() => {
-		// reset category when type changes
-		form.type && setFormData((d) => ({ ...d, category: "" }));
-	}, [form.type]);
-
 	return (
 		<Modal>
 			{({ close }) => (
@@ -118,9 +127,9 @@ const TransactionModal = () => {
 						id="form"
 						className="flex flex-col gap-4"
 						onSubmit={(e) => {
-							handleSubmit(e);
-							setFormData(init);
 							close();
+							handleSubmit(e);
+							setFormData(initTransactionForm());
 						}}
 					>
 						<div className="grid grid-cols-8 gap-4">
@@ -148,7 +157,11 @@ const TransactionModal = () => {
 								isRequired
 								selectedKey={form.type}
 								onSelectionChange={(key) =>
-									setFormData({ ...form, type: key as CategoryType })
+									setFormData({
+										...form,
+										category: "",
+										type: key as CategoryType,
+									})
 								}
 							>
 								<Select.Item id={CategoryType.EXPENSE}>Expense</Select.Item>
@@ -168,7 +181,8 @@ const TransactionModal = () => {
 							>
 								{(queryCategories.data?.categories ?? []).map((cat) => (
 									<Select.Item key={cat.id} id={cat.id}>
-										{cat.name}
+										{cat.emoji}
+										<span className="ml-1.5">{cat.name}</span>
 									</Select.Item>
 								))}
 							</Select>
@@ -317,4 +331,5 @@ export function AppLayout() {
 }
 
 export { default as AppDashboardPage } from "./app/index";
+export { default as AppTransactionsPage } from "./app/transactions";
 export { default as AppCategoriesPage } from "./app/categories";

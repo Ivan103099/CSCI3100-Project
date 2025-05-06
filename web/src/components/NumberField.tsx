@@ -22,9 +22,11 @@ const NumberField = ({
 		className={cn("group flex flex-col gap-2", className)}
 		{...props}
 	>
-		<Aria.Label className="text-sm font-medium leading-none disabled:cursor-not-allowed disabled:opacity-70">
-			{label}
-		</Aria.Label>
+		{label && (
+			<Aria.Label className="text-sm font-medium leading-none disabled:cursor-not-allowed disabled:opacity-70">
+				{label}
+			</Aria.Label>
+		)}
 		<Aria.Group className="relative flex w-full items-center">
 			<Aria.Input
 				className={cn(

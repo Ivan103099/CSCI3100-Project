@@ -2,14 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { useAtomValue } from "jotai";
 import { PieChart, Pie } from "recharts";
-import {
-	Calendar,
-	ArrowDown,
-	ArrowUp,
-	DollarSign,
-	PiggyBank,
-} from "lucide-react";
+import { getLocalTimeZone, now } from "@internationalized/date";
+import { Calendar, ArrowDown, ArrowUp, Coins, DollarSign } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { CategoryType, type AccountSummary } from "@/lib/models";
 import { $account } from "@/lib/client";
 import {
@@ -46,21 +42,29 @@ const SummaryCards = () => {
 			border: "border-t-red-500",
 			Icon: <ArrowDown className="text-red-500" />,
 		},
-		budget: {
-			title: "Budget",
+		average: {
+			title: "Daily Average",
 			border: "border-t-yellow-500",
-			Icon: <PiggyBank className="text-yellow-500" />,
+			Icon: <Coins className="text-yellow-500" />,
 		},
 	};
 
 	const [query] = useAccountSummaryQuery();
+
+	const days = React.useMemo(() => now(getLocalTimeZone()).day, []);
+
+	const summary = React.useMemo(() => {
+		if (!query.data) return {};
+		const average = query.data.account.summary.balance / days;
+		return { ...query.data.account.summary, average };
+	}, [query.data, days]);
 
 	if (query.error) {
 		return <></>;
 	}
 	return (
 		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			{Object.entries(query.data?.account.summary || {})
+			{Object.entries(summary)
 				.filter(([key]) => key in PROPS)
 				.map(([key, value]) => {
 					const { title, border, Icon } = PROPS[key as keyof AccountSummary];
@@ -74,13 +78,17 @@ const SummaryCards = () => {
 								{Icon}
 							</Card.Header>
 							<Card.Content>
-								<p className="text-2xl font-bold">
-									{value.toLocaleString("en-HK", {
+								<p className="flex items-center text-2xl font-bold">
+									{Number(value).toLocaleString("en-HK", {
 										style: "currency",
 										currency: "HKD",
 									})}
+									{key === "average" && (
+										<span className="ml-auto font-medium text-sm text-muted-foreground">
+											/ {days} days
+										</span>
+									)}
 								</p>
-								<p className="text-sm text-muted-foreground">{""}</p>
 							</Card.Content>
 						</Card>
 					);
@@ -107,37 +115,36 @@ const RecentTransactions = () => {
 				</Card.Description>
 			</Card.Header>
 			<Card.Content className="flex-1 flex flex-col divide-y divide-border">
-				{query.data?.transactions.slice(0, 5).map((item) => {
-					const type = item.category.type;
-					const color = type === "INCOME" ? "text-green-500" : "text-red-500";
-					return (
-						<li
-							key={item.id}
-							className="flex items-center py-4 overflow-hidden"
+				{query.data?.transactions.slice(0, 5).map((item) => (
+					<li key={item.id} className="flex items-center py-4">
+						<span
+							className="flex items-center justify-center size-10 min-w-10 rounded-xl text-xl"
+							style={{ backgroundColor: item.category.color }}
 						>
-							<span
-								className="flex items-center justify-center size-10 rounded-xl text-xl"
-								style={{ backgroundColor: item.category.color }}
-							>
-								{item.category.emoji}
-							</span>
-							<div className="mx-4 space-y-1 overflow-scroll">
-								<p className="text-sm text-ellipsis font-medium leading-none">
-									{item.title}
-								</p>
-								<p className="text-sm text-muted-foreground">
-									{new Date(item.timestamp * 1000).toLocaleString("en-HK")}
-								</p>
-							</div>
-							<div className={`ml-auto font-medium ${color}`}>
-								{item.amount.toLocaleString("en-HK", {
-									style: "currency",
-									currency: "HKD",
-								})}
-							</div>
-						</li>
-					);
-				})}
+							{item.category.emoji}
+						</span>
+						<div className="mx-4 space-y-1 overflow-hidden">
+							<p className="text-sm font-medium leading-none truncate">
+								{item.title}
+							</p>
+							<p className="text-sm text-muted-foreground">
+								{new Date(item.timestamp * 1000).toLocaleString("en-HK")}
+							</p>
+						</div>
+						<div
+							className={cn(
+								"ml-auto font-medium",
+								item.category.type === CategoryType.EXPENSE && "text-red-500",
+								item.category.type === CategoryType.INCOME && "text-green-500",
+							)}
+						>
+							{item.amount.toLocaleString("en-HK", {
+								style: "currency",
+								currency: "HKD",
+							})}
+						</div>
+					</li>
+				))}
 			</Card.Content>
 			<Card.Footer>
 				<Button
@@ -195,7 +202,7 @@ const CategorizedBreakdown = () => {
 		return <></>;
 	}
 	return (
-		<Card>
+		<Card className="h-full">
 			<Card.Header className="flex-row items-center justify-between gap-2">
 				<div className="space-y-1.5">
 					<Card.Title>Categorized Breakdown</Card.Title>
@@ -302,7 +309,7 @@ export default function AppDashboardPage() {
 
 	return (
 		<main className="flex-1 p-4 md:p-8 space-y-4">
-			<div className="flex items-center justify-between px-2 pb-2">
+			<div className="flex items-center justify-between pb-2">
 				<div className="flex flex-col gap-2">
 					<div className="text-4xl">Overview</div>
 					<div className="text-lg text-muted-foreground">
@@ -317,11 +324,11 @@ export default function AppDashboardPage() {
 				</div>
 			</div>
 			<SummaryCards />
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
 				<div className="col-span-4">
 					<RecentTransactions />
 				</div>
-				<div className="col-span-3">
+				<div className="col-span-4">
 					<CategorizedBreakdown />
 				</div>
 			</div>

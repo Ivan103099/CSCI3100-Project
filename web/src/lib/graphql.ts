@@ -20,7 +20,6 @@ import { BASE_URL, $account } from "./client";
 
 const store = getDefaultStore();
 
-// TODO: recreate client when logout
 let client: Client;
 
 export const createClient = () => {

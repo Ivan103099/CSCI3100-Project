@@ -36,7 +36,7 @@ const request = async <R = undefined>(
 
 	if (!response.ok) {
 		if (contentType.startsWith("text/plain")) {
-			throw new Error(`${response.status} ${await response.text()}`);
+			throw new Error(`${await response.text()} (${response.status})`);
 		}
 		throw new Error(response.statusText || response.status.toString());
 	}

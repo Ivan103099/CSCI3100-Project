@@ -17,7 +17,12 @@ import { createClient } from "@/lib/graphql";
 
 import Toast from "./components/Toast";
 import { AuthLayout, AuthLoginPage, AuthRegisterPage } from "./pages/auth";
-import { AppLayout, AppDashboardPage, AppCategoriesPage } from "./pages/app";
+import {
+	AppLayout,
+	AppDashboardPage,
+	AppTransactionsPage,
+	AppCategoriesPage,
+} from "./pages/app";
 
 declare module "react-aria-components" {
 	interface RouterConfig {
@@ -40,7 +45,7 @@ const App = () => {
 					<Routes>
 						<Route element={<AppLayout />}>
 							<Route index element={<AppDashboardPage />} />
-							<Route path="transactions" />
+							<Route path="transactions" element={<AppTransactionsPage />} />
 							<Route path="budgets" />
 							<Route path="categories" element={<AppCategoriesPage />} />
 						</Route>

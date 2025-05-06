@@ -20,9 +20,11 @@ const SearchField = ({
 		className={cn("group flex flex-col gap-2", className)}
 		{...props}
 	>
-		<Aria.Label className="text-sm font-medium leading-none disabled:cursor-not-allowed disabled:opacity-70">
-			{label}
-		</Aria.Label>
+		{label && (
+			<Aria.Label className="text-sm font-medium leading-none disabled:cursor-not-allowed disabled:opacity-70">
+				{label}
+			</Aria.Label>
+		)}
 		<Aria.Group
 			className={cn(
 				"relative flex h-10 w-full items-center overflow-hidden rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",

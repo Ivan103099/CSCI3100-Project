@@ -1,3 +1,5 @@
+// TODO: generate these types from GraphQL schema
+
 export enum CategoryType {
 	EXPENSE = "EXPENSE",
 	INCOME = "INCOME",
