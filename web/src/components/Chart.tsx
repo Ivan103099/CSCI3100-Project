@@ -237,14 +237,12 @@ const ChartTooltipContent = React.forwardRef<
 													{itemConfig?.label || item.name}
 												</span>
 											</div>
-											{item.value && (
-												<span className="font-medium tabular-nums text-foreground">
-													{item.value.toLocaleString("en-HK", {
-														style: "currency",
-														currency: "HKD",
-													})}
-												</span>
-											)}
+											<span className="font-medium tabular-nums text-foreground">
+												{(item.value ?? 0).toLocaleString("en-HK", {
+													style: "currency",
+													currency: "HKD",
+												})}
+											</span>
 										</div>
 									</>
 								)}

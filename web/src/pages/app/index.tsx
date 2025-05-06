@@ -1,8 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { useAtomValue } from "jotai";
-import { PieChart, Pie } from "recharts";
-import { getLocalTimeZone, now } from "@internationalized/date";
+import { PieChart, Pie, BarChart, CartesianGrid, XAxis, Bar } from "recharts";
+import {
+	fromAbsolute,
+	getLocalTimeZone,
+	getMinimumDayInMonth,
+	GregorianCalendar,
+	isSameDay,
+	now,
+} from "@internationalized/date";
 import { Calendar, ArrowDown, ArrowUp, Coins, DollarSign } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -272,27 +279,88 @@ const BudgetPlan = () => {
 	);
 };
 
-const SavingGoals = () => {
-	const navigate = useNavigate();
+const DailyBalance = () => {
+	const [query] = useTransactionsQuery();
+
+	const chart = React.useMemo(
+		() => ({
+			income: { label: "Income" },
+			expense: { label: "Expense" },
+		}),
+		[],
+	);
+
+	const data = React.useMemo(() => {
+		const current = now(getLocalTimeZone());
+		const incomes = (query.data?.transactions ?? []).filter(
+			(item) => item.category.type === CategoryType.INCOME,
+		);
+		const expenses = (query.data?.transactions ?? []).filter(
+			(item) => item.category.type === CategoryType.EXPENSE,
+		);
+		const getDay = (timestamp: number) =>
+			fromAbsolute(timestamp * 1000, getLocalTimeZone()).day;
+		const data = [];
+		for (let day = 1; day <= current.day; day++) {
+			const income = incomes
+				.filter((item) => getDay(item.timestamp) === day)
+				.reduce((sum, { amount }) => sum + amount, 0);
+			const expense = expenses
+				.filter((item) => getDay(item.timestamp) === day)
+				.reduce((sum, { amount }) => sum + amount, 0);
+			data.push({ day, income, expense });
+		}
+		return data;
+	}, [query.data]);
+
+	const most = React.useMemo(
+		() =>
+			data.reduce((m, i) => (m.expense > i.expense ? m : i), {
+				day: 0,
+				expense: 0,
+				income: 0,
+			}),
+		[data],
+	);
+
 	return (
-		<Card className="flex flex-col justify-between h-full">
-			<Card.Header>
-				<Card.Title>Savings Goals</Card.Title>
-				<Card.Description>
-					Track your progress towards financial goals.
-				</Card.Description>
+		<Card className="h-full">
+			<Card.Header className="flex-row items-center justify-between gap-2">
+				<div className="space-y-1.5">
+					<Card.Title>Daily Balance</Card.Title>
+					<Card.Description>
+						Your spent most on day {most.day || "?"} of this month.
+					</Card.Description>
+				</div>
 			</Card.Header>
-			<Card.Content>{}</Card.Content>
-			<Card.Footer>
-				<Button
-					variant="outline"
-					size="sm"
-					className="w-full"
-					onPress={() => navigate("/savings")}
+			<Card.Content>
+				<ChartContainer
+					config={chart}
+					className="mx-auto aspect-square w-full max-h-[300px]"
 				>
-					View Details
-				</Button>
-			</Card.Footer>
+					<BarChart data={data}>
+						<CartesianGrid vertical={false} />
+						<XAxis
+							dataKey="day"
+							tickLine={false}
+							axisLine={false}
+							interval={0}
+						/>
+						<ChartTooltip content={<ChartTooltipContent hideLabel />} />
+						<ChartLegend content={<ChartLegendContent />} />
+						<Bar
+							dataKey="income"
+							fill="var(--color-emerald-500)"
+							radius={[2, 2, 0, 0]}
+						/>
+						<Bar
+							dataKey="expense"
+							fill="var(--color-rose-500)"
+							radius={[2, 2, 0, 0]}
+						/>
+					</BarChart>
+				</ChartContainer>
+			</Card.Content>
 		</Card>
 	);
 };
@@ -332,9 +400,13 @@ export default function AppDashboardPage() {
 					<CategorizedBreakdown />
 				</div>
 			</div>
-			<div className="grid gap-4 md:grid-cols-2">
-				<BudgetPlan />
-				<SavingGoals />
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+				<div className="col-span-4">
+					<DailyBalance />
+				</div>
+				<div className="col-span-4">
+					<BudgetPlan />
+				</div>
 			</div>
 		</main>
 	);
