@@ -41,6 +41,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Account() AccountResolver
+	Budget() BudgetResolver
 	Category() CategoryResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -56,7 +57,6 @@ type ComplexityRoot struct {
 	Account struct {
 		Email    func(childComplexity int) int
 		Fullname func(childComplexity int) int
-		Group    func(childComplexity int) int
 		GroupID  func(childComplexity int) int
 		ID       func(childComplexity int) int
 		Summary  func(childComplexity int) int
@@ -67,10 +67,16 @@ type ComplexityRoot struct {
 		Income  func(childComplexity int) int
 	}
 
+	Budget struct {
+		Amount     func(childComplexity int) int
+		Category   func(childComplexity int) int
+		CategoryID func(childComplexity int) int
+	}
+
 	Category struct {
+		Budget       func(childComplexity int) int
 		Color        func(childComplexity int) int
 		Emoji        func(childComplexity int) int
-		Group        func(childComplexity int) int
 		GroupID      func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Name         func(childComplexity int) int
@@ -78,18 +84,16 @@ type ComplexityRoot struct {
 		Type         func(childComplexity int) int
 	}
 
-	Group struct {
-		ID func(childComplexity int) int
-	}
-
 	Mutation struct {
 		CreateAccount     func(childComplexity int, a models.CreateAccount) int
+		CreateBudget      func(childComplexity int, b models.CreateBudget) int
 		CreateCategory    func(childComplexity int, c models.CreateCategory) int
 		CreateTransaction func(childComplexity int, t models.CreateTransaction) int
 	}
 
 	Query struct {
 		Account      func(childComplexity int) int
+		Budgets      func(childComplexity int) int
 		Categories   func(childComplexity int, ct *models.CategoryType) int
 		Category     func(childComplexity int, id types.ID) int
 		Transaction  func(childComplexity int, id types.ID) int
@@ -109,17 +113,20 @@ type ComplexityRoot struct {
 }
 
 type AccountResolver interface {
-	Group(ctx context.Context, obj *models.Account) (models.Group, error)
 	Summary(ctx context.Context, obj *models.Account) (models.AccountSummary, error)
 }
+type BudgetResolver interface {
+	Category(ctx context.Context, obj *models.Budget) (models.Category, error)
+}
 type CategoryResolver interface {
-	Group(ctx context.Context, obj *models.Category) (models.Group, error)
+	Budget(ctx context.Context, obj *models.Category) (*models.Budget, error)
 	Transactions(ctx context.Context, obj *models.Category) ([]models.Transaction, error)
 }
 type MutationResolver interface {
 	CreateAccount(ctx context.Context, a models.CreateAccount) (models.Account, error)
 	CreateCategory(ctx context.Context, c models.CreateCategory) (models.Category, error)
 	CreateTransaction(ctx context.Context, t models.CreateTransaction) (models.Transaction, error)
+	CreateBudget(ctx context.Context, b models.CreateBudget) (models.Budget, error)
 }
 type QueryResolver interface {
 	Account(ctx context.Context) (models.Account, error)
@@ -127,6 +134,7 @@ type QueryResolver interface {
 	Categories(ctx context.Context, ct *models.CategoryType) ([]models.Category, error)
 	Transaction(ctx context.Context, id types.ID) (models.Transaction, error)
 	Transactions(ctx context.Context, ct *models.CategoryType) ([]models.Transaction, error)
+	Budgets(ctx context.Context) ([]models.Budget, error)
 }
 type TransactionResolver interface {
 	Category(ctx context.Context, obj *models.Transaction) (models.Category, error)
@@ -166,13 +174,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Account.Fullname(childComplexity), true
 
-	case "Account.group":
-		if e.complexity.Account.Group == nil {
-			break
-		}
-
-		return e.complexity.Account.Group(childComplexity), true
-
 	case "Account.gid":
 		if e.complexity.Account.GroupID == nil {
 			break
@@ -208,6 +209,34 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.AccountSummary.Income(childComplexity), true
 
+	case "Budget.amount":
+		if e.complexity.Budget.Amount == nil {
+			break
+		}
+
+		return e.complexity.Budget.Amount(childComplexity), true
+
+	case "Budget.category":
+		if e.complexity.Budget.Category == nil {
+			break
+		}
+
+		return e.complexity.Budget.Category(childComplexity), true
+
+	case "Budget.cid":
+		if e.complexity.Budget.CategoryID == nil {
+			break
+		}
+
+		return e.complexity.Budget.CategoryID(childComplexity), true
+
+	case "Category.budget":
+		if e.complexity.Category.Budget == nil {
+			break
+		}
+
+		return e.complexity.Category.Budget(childComplexity), true
+
 	case "Category.color":
 		if e.complexity.Category.Color == nil {
 			break
@@ -221,13 +250,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Category.Emoji(childComplexity), true
-
-	case "Category.group":
-		if e.complexity.Category.Group == nil {
-			break
-		}
-
-		return e.complexity.Category.Group(childComplexity), true
 
 	case "Category.gid":
 		if e.complexity.Category.GroupID == nil {
@@ -264,13 +286,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Category.Type(childComplexity), true
 
-	case "Group.id":
-		if e.complexity.Group.ID == nil {
-			break
-		}
-
-		return e.complexity.Group.ID(childComplexity), true
-
 	case "Mutation.createAccount":
 		if e.complexity.Mutation.CreateAccount == nil {
 			break
@@ -282,6 +297,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateAccount(childComplexity, args["a"].(models.CreateAccount)), true
+
+	case "Mutation.createBudget":
+		if e.complexity.Mutation.CreateBudget == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createBudget_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateBudget(childComplexity, args["b"].(models.CreateBudget)), true
 
 	case "Mutation.createCategory":
 		if e.complexity.Mutation.CreateCategory == nil {
@@ -313,6 +340,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Account(childComplexity), true
+
+	case "Query.budgets":
+		if e.complexity.Query.Budgets == nil {
+			break
+		}
+
+		return e.complexity.Query.Budgets(childComplexity), true
 
 	case "Query.categories":
 		if e.complexity.Query.Categories == nil {
@@ -427,6 +461,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateAccount,
+		ec.unmarshalInputCreateBudget,
 		ec.unmarshalInputCreateCategory,
 		ec.unmarshalInputCreateTransaction,
 	)
@@ -621,6 +656,29 @@ func (ec *executionContext) field_Mutation_createAccount_argsA(
 	}
 
 	var zeroVal models.CreateAccount
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_createBudget_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_createBudget_argsB(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["b"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_createBudget_argsB(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (models.CreateBudget, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("b"))
+	if tmp, ok := rawArgs["b"]; ok {
+		return ec.unmarshalNCreateBudget2finawiseᚗappᚋserverᚋmodelsᚐCreateBudget(ctx, tmp)
+	}
+
+	var zeroVal models.CreateBudget
 	return zeroVal, nil
 }
 
@@ -1061,54 +1119,6 @@ func (ec *executionContext) fieldContext_Account_fullname(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Account_group(ctx context.Context, field graphql.CollectedField, obj *models.Account) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Account_group(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Account().Group(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(models.Group)
-	fc.Result = res
-	return ec.marshalNGroup2finawiseᚗappᚋserverᚋmodelsᚐGroup(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Account_group(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Account",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Group_id(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Group", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Account_summary(ctx context.Context, field graphql.CollectedField, obj *models.Account) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Account_summary(ctx, field)
 	if err != nil {
@@ -1242,6 +1252,156 @@ func (ec *executionContext) fieldContext_AccountSummary_expense(_ context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Budget_cid(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Budget_cid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CategoryID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(types.ID)
+	fc.Result = res
+	return ec.marshalNULID2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Budget_cid(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Budget",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ULID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Budget_amount(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Budget_amount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Amount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Budget_amount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Budget",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Budget_category(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Budget_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Budget().Category(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Category)
+	fc.Result = res
+	return ec.marshalNCategory2finawiseᚗappᚋserverᚋmodelsᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Budget_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Budget",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Category_id(ctx, field)
+			case "gid":
+				return ec.fieldContext_Category_gid(ctx, field)
+			case "name":
+				return ec.fieldContext_Category_name(ctx, field)
+			case "type":
+				return ec.fieldContext_Category_type(ctx, field)
+			case "emoji":
+				return ec.fieldContext_Category_emoji(ctx, field)
+			case "color":
+				return ec.fieldContext_Category_color(ctx, field)
+			case "budget":
+				return ec.fieldContext_Category_budget(ctx, field)
+			case "transactions":
+				return ec.fieldContext_Category_transactions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
 		},
 	}
 	return fc, nil
@@ -1511,8 +1671,8 @@ func (ec *executionContext) fieldContext_Category_color(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Category_group(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Category_group(ctx, field)
+func (ec *executionContext) _Category_budget(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Category_budget(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1525,24 +1685,21 @@ func (ec *executionContext) _Category_group(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Category().Group(rctx, obj)
+		return ec.resolvers.Category().Budget(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(models.Group)
+	res := resTmp.(*models.Budget)
 	fc.Result = res
-	return ec.marshalNGroup2finawiseᚗappᚋserverᚋmodelsᚐGroup(ctx, field.Selections, res)
+	return ec.marshalOBudget2ᚖfinawiseᚗappᚋserverᚋmodelsᚐBudget(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Category_group(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Category_budget(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Category",
 		Field:      field,
@@ -1550,10 +1707,14 @@ func (ec *executionContext) fieldContext_Category_group(_ context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Group_id(ctx, field)
+			case "cid":
+				return ec.fieldContext_Budget_cid(ctx, field)
+			case "amount":
+				return ec.fieldContext_Budget_amount(ctx, field)
+			case "category":
+				return ec.fieldContext_Budget_category(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Group", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Budget", field.Name)
 		},
 	}
 	return fc, nil
@@ -1616,50 +1777,6 @@ func (ec *executionContext) fieldContext_Category_transactions(_ context.Context
 				return ec.fieldContext_Transaction_account(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Group_id(ctx context.Context, field graphql.CollectedField, obj *models.Group) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Group_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int64)
-	fc.Result = res
-	return ec.marshalNID2int64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Group_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Group",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1739,8 +1856,6 @@ func (ec *executionContext) fieldContext_Mutation_createAccount(ctx context.Cont
 				return ec.fieldContext_Account_email(ctx, field)
 			case "fullname":
 				return ec.fieldContext_Account_fullname(ctx, field)
-			case "group":
-				return ec.fieldContext_Account_group(ctx, field)
 			case "summary":
 				return ec.fieldContext_Account_summary(ctx, field)
 			}
@@ -1839,8 +1954,8 @@ func (ec *executionContext) fieldContext_Mutation_createCategory(ctx context.Con
 				return ec.fieldContext_Category_emoji(ctx, field)
 			case "color":
 				return ec.fieldContext_Category_color(ctx, field)
-			case "group":
-				return ec.fieldContext_Category_group(ctx, field)
+			case "budget":
+				return ec.fieldContext_Category_budget(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -1961,6 +2076,96 @@ func (ec *executionContext) fieldContext_Mutation_createTransaction(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createBudget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createBudget(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateBudget(rctx, fc.Args["b"].(models.CreateBudget))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
+			if err != nil {
+				var zeroVal models.Budget
+				return zeroVal, err
+			}
+			if ec.directives.Auth == nil {
+				var zeroVal models.Budget
+				return zeroVal, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, enabled)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(models.Budget); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Budget`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Budget)
+	fc.Result = res
+	return ec.marshalNBudget2finawiseᚗappᚋserverᚋmodelsᚐBudget(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createBudget(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cid":
+				return ec.fieldContext_Budget_cid(ctx, field)
+			case "amount":
+				return ec.fieldContext_Budget_amount(ctx, field)
+			case "category":
+				return ec.fieldContext_Budget_category(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Budget", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createBudget_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_account(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_account(ctx, field)
 	if err != nil {
@@ -2035,8 +2240,6 @@ func (ec *executionContext) fieldContext_Query_account(_ context.Context, field 
 				return ec.fieldContext_Account_email(ctx, field)
 			case "fullname":
 				return ec.fieldContext_Account_fullname(ctx, field)
-			case "group":
-				return ec.fieldContext_Account_group(ctx, field)
 			case "summary":
 				return ec.fieldContext_Account_summary(ctx, field)
 			}
@@ -2124,8 +2327,8 @@ func (ec *executionContext) fieldContext_Query_category(ctx context.Context, fie
 				return ec.fieldContext_Category_emoji(ctx, field)
 			case "color":
 				return ec.fieldContext_Category_color(ctx, field)
-			case "group":
-				return ec.fieldContext_Category_group(ctx, field)
+			case "budget":
+				return ec.fieldContext_Category_budget(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -2224,8 +2427,8 @@ func (ec *executionContext) fieldContext_Query_categories(ctx context.Context, f
 				return ec.fieldContext_Category_emoji(ctx, field)
 			case "color":
 				return ec.fieldContext_Category_color(ctx, field)
-			case "group":
-				return ec.fieldContext_Category_group(ctx, field)
+			case "budget":
+				return ec.fieldContext_Category_budget(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -2442,6 +2645,85 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 	if fc.Args, err = ec.field_Query_transactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_budgets(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_budgets(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Budgets(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
+			if err != nil {
+				var zeroVal []models.Budget
+				return zeroVal, err
+			}
+			if ec.directives.Auth == nil {
+				var zeroVal []models.Budget
+				return zeroVal, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, enabled)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]models.Budget); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []finawise.app/server/models.Budget`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]models.Budget)
+	fc.Result = res
+	return ec.marshalNBudget2ᚕfinawiseᚗappᚋserverᚋmodelsᚐBudgetᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_budgets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cid":
+				return ec.fieldContext_Budget_cid(ctx, field)
+			case "amount":
+				return ec.fieldContext_Budget_amount(ctx, field)
+			case "category":
+				return ec.fieldContext_Budget_category(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Budget", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -2892,8 +3174,8 @@ func (ec *executionContext) fieldContext_Transaction_category(_ context.Context,
 				return ec.fieldContext_Category_emoji(ctx, field)
 			case "color":
 				return ec.fieldContext_Category_color(ctx, field)
-			case "group":
-				return ec.fieldContext_Category_group(ctx, field)
+			case "budget":
+				return ec.fieldContext_Category_budget(ctx, field)
 			case "transactions":
 				return ec.fieldContext_Category_transactions(ctx, field)
 			}
@@ -2950,8 +3232,6 @@ func (ec *executionContext) fieldContext_Transaction_account(_ context.Context, 
 				return ec.fieldContext_Account_email(ctx, field)
 			case "fullname":
 				return ec.fieldContext_Account_fullname(ctx, field)
-			case "group":
-				return ec.fieldContext_Account_group(ctx, field)
 			case "summary":
 				return ec.fieldContext_Account_summary(ctx, field)
 			}
@@ -5013,6 +5293,82 @@ func (ec *executionContext) unmarshalInputCreateAccount(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateBudget(ctx context.Context, obj any) (models.CreateBudget, error) {
+	var it models.CreateBudget
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"cid", "amount"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "cid":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cid"))
+			directive0 := func(ctx context.Context) (any, error) {
+				return ec.unmarshalNULID2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐID(ctx, v)
+			}
+
+			directive1 := func(ctx context.Context) (any, error) {
+				tag, err := ec.unmarshalNString2string(ctx, "required,ulid")
+				if err != nil {
+					var zeroVal types.ID
+					return zeroVal, err
+				}
+				if ec.directives.Validate == nil {
+					var zeroVal types.ID
+					return zeroVal, errors.New("directive validate is not implemented")
+				}
+				return ec.directives.Validate(ctx, obj, directive0, tag)
+			}
+
+			tmp, err := directive1(ctx)
+			if err != nil {
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+			if data, ok := tmp.(types.ID); ok {
+				it.CategoryID = data
+			} else {
+				err := fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models/types.ID`, tmp)
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+		case "amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNFloat2float64(ctx, v) }
+
+			directive1 := func(ctx context.Context) (any, error) {
+				tag, err := ec.unmarshalNString2string(ctx, "required,gt=0")
+				if err != nil {
+					var zeroVal float64
+					return zeroVal, err
+				}
+				if ec.directives.Validate == nil {
+					var zeroVal float64
+					return zeroVal, errors.New("directive validate is not implemented")
+				}
+				return ec.directives.Validate(ctx, obj, directive0, tag)
+			}
+
+			tmp, err := directive1(ctx)
+			if err != nil {
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+			if data, ok := tmp.(float64); ok {
+				it.Amount = data
+			} else {
+				err := fmt.Errorf(`unexpected type %T from directive, should be float64`, tmp)
+				return it, graphql.ErrorOnPath(ctx, err)
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, obj any) (models.CreateCategory, error) {
 	var it models.CreateCategory
 	asMap := map[string]any{}
@@ -5314,42 +5670,6 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "group":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Account_group(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "summary":
 			field := field
 
@@ -5453,6 +5773,86 @@ func (ec *executionContext) _AccountSummary(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var budgetImplementors = []string{"Budget"}
+
+func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, obj *models.Budget) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, budgetImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Budget")
+		case "cid":
+			out.Values[i] = ec._Budget_cid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "amount":
+			out.Values[i] = ec._Budget_amount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "category":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Budget_category(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var categoryImplementors = []string{"Category"}
 
 func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet, obj *models.Category) graphql.Marshaler {
@@ -5494,19 +5894,16 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "group":
+		case "budget":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Category_group(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
+				res = ec._Category_budget(ctx, field, obj)
 				return res
 			}
 
@@ -5589,45 +5986,6 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
-var groupImplementors = []string{"Group"}
-
-func (ec *executionContext) _Group(ctx context.Context, sel ast.SelectionSet, obj *models.Group) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, groupImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Group")
-		case "id":
-			out.Values[i] = ec._Group_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -5664,6 +6022,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createTransaction":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTransaction(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createBudget":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createBudget(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5808,6 +6173,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_transactions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "budgets":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_budgets(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -6345,6 +6732,54 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNBudget2finawiseᚗappᚋserverᚋmodelsᚐBudget(ctx context.Context, sel ast.SelectionSet, v models.Budget) graphql.Marshaler {
+	return ec._Budget(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBudget2ᚕfinawiseᚗappᚋserverᚋmodelsᚐBudgetᚄ(ctx context.Context, sel ast.SelectionSet, v []models.Budget) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBudget2finawiseᚗappᚋserverᚋmodelsᚐBudget(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNCategory2finawiseᚗappᚋserverᚋmodelsᚐCategory(ctx context.Context, sel ast.SelectionSet, v models.Category) graphql.Marshaler {
 	return ec._Category(ctx, sel, &v)
 }
@@ -6408,6 +6843,11 @@ func (ec *executionContext) unmarshalNCreateAccount2finawiseᚗappᚋserverᚋmo
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateBudget2finawiseᚗappᚋserverᚋmodelsᚐCreateBudget(ctx context.Context, v any) (models.CreateBudget, error) {
+	res, err := ec.unmarshalInputCreateBudget(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateCategory2finawiseᚗappᚋserverᚋmodelsᚐCreateCategory(ctx context.Context, v any) (models.CreateCategory, error) {
 	res, err := ec.unmarshalInputCreateCategory(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6431,10 +6871,6 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 		}
 	}
 	return graphql.WrapContextMarshaler(ctx, res)
-}
-
-func (ec *executionContext) marshalNGroup2finawiseᚗappᚋserverᚋmodelsᚐGroup(ctx context.Context, sel ast.SelectionSet, v models.Group) graphql.Marshaler {
-	return ec._Group(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNID2int64(ctx context.Context, v any) (int64, error) {
@@ -6810,6 +7246,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOBudget2ᚖfinawiseᚗappᚋserverᚋmodelsᚐBudget(ctx context.Context, sel ast.SelectionSet, v *models.Budget) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Budget(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOCategoryType2ᚖfinawiseᚗappᚋserverᚋmodelsᚐCategoryType(ctx context.Context, v any) (*models.CategoryType, error) {

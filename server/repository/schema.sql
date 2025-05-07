@@ -33,3 +33,16 @@ CREATE TABLE IF NOT EXISTS "transactions" (
     FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "budgets" (
+    "category_id" TEXT PRIMARY KEY,
+    "amount" REAL NOT NULL,
+    FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TRIGGER IF NOT EXISTS check_budget_category
+BEFORE INSERT ON "budgets"
+BEGIN
+    SELECT RAISE(FAIL, "budget cannot be set for income category")
+    FROM "categories" WHERE "id" = NEW."category_id" AND "type" = 'INCOME';
+END;

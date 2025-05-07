@@ -41,17 +41,12 @@ type Account
 	email: String!
 	fullname: String!
 
-	group: Group! @goField(forceResolver: true)
 	summary: AccountSummary! @goField(forceResolver: true)
 }
 
 type AccountSummary {
 	income: Float!
 	expense: Float!
-}
-
-type Group {
-	id: ID!
 }
 
 type Category {
@@ -62,7 +57,7 @@ type Category {
 	emoji: String!
 	color: String!
 
-	group: Group! @goField(forceResolver: true)
+	budget: Budget @goField(forceResolver: true)
 	transactions: [Transaction!]! @goField(forceResolver: true)
 }
 
@@ -80,12 +75,22 @@ type Transaction {
 	account: Account! @goField(forceResolver: true)
 }
 
+type Budget {
+	cid: ULID!
+		@goField(name: "CategoryID")
+		@goTag(key: "json", value: "category_id")
+	amount: Float!
+
+	category: Category! @goField(forceResolver: true)
+}
+
 type Query {
 	account: Account! @auth(enabled: true)
 	category(id: ULID!): Category! @auth(enabled: true)
 	categories(ct: CategoryType): [Category!]! @auth(enabled: true)
 	transaction(id: ULID!): Transaction! @auth(enabled: true)
 	transactions(ct: CategoryType): [Transaction!]! @auth(enabled: true)
+	budgets: [Budget!]! @auth(enabled: true)
 }
 
 input CreateAccount {
@@ -108,8 +113,14 @@ input CreateTransaction {
 	timestamp: Timestamp! @validate(tag: "required")
 }
 
+input CreateBudget {
+	cid: ULID! @validate(tag: "required,ulid") @goField(name: "CategoryID")
+	amount: Float! @validate(tag: "required,gt=0")
+}
+
 type Mutation {
 	createAccount(a: CreateAccount!): Account! @auth(enabled: false)
 	createCategory(c: CreateCategory!): Category! @auth(enabled: true)
 	createTransaction(t: CreateTransaction!): Transaction! @auth(enabled: true)
+	createBudget(b: CreateBudget!): Budget! @auth(enabled: true)
 }

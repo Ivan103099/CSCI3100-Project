@@ -59,11 +59,13 @@ type Repository interface {
 	CreateAccount(a models.Account) (int64, error)
 	CreateCategory(c models.Category) (types.ID, error)
 	CreateTransaction(t models.Transaction) (types.ID, error)
+	CreateBudget(b models.Budget) error
 
-	GetGroup(gid int64) (models.Group, error)
 	GetCategory(cid types.ID) (models.Category, error)
 	GetCategories(gid int64, ct *models.CategoryType) ([]models.Category, error)
 	GetTransaction(tid types.ID) (models.Transaction, error)
+	GetBudget(cid types.ID) (models.Budget, error)
+	GetBudgets(gid int64) ([]models.Budget, error)
 	GetAccount(aid int64) (models.Account, error)
 	GetAccountSummary(aid int64) (as models.AccountSummary, err error)
 
@@ -154,13 +156,13 @@ func (r *repository) CreateTransaction(t models.Transaction) (types.ID, error) {
 	return tid, err
 }
 
-func (r *repository) GetGroup(gid int64) (g models.Group, err error) {
-	s, args := SQL.Select("*").
-		From("groups").
-		Where(sq.Eq{"id": gid}).
+func (r *repository) CreateBudget(b models.Budget) error {
+	s, args := SQL.Insert("budgets").
+		Columns("category_id", "amount").
+		Values(b.CategoryID, b.Amount).
 		MustSQL()
-	err = r.db.Get(&g, s, args...)
-	return
+	_, err := r.db.Exec(s, args...)
+	return err
 }
 
 func (r *repository) GetCategory(cid types.ID) (c models.Category, err error) {
@@ -191,6 +193,31 @@ func (r *repository) GetTransaction(tid types.ID) (t models.Transaction, err err
 		Where(sq.Eq{"id": tid}).
 		MustSQL()
 	err = r.db.Get(&t, s, args...)
+	return
+}
+
+func (r *repository) GetBudget(cid types.ID) (b models.Budget, err error) {
+	s, args := SQL.Select("*").
+		From("budgets").
+		Where(sq.Eq{"category_id": cid}).
+		MustSQL()
+	err = r.db.Get(&b, s, args...)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (r *repository) GetBudgets(gid int64) (b []models.Budget, err error) {
+	s, args := SQL.Select("b.*").
+		From("budgets b").
+		Join("categories c ON b.category_id = c.id").
+		Where(sq.Eq{"c.group_id": gid}).
+		MustSQL()
+	err = r.db.Select(&b, s, args...)
+	if err != nil {
+		return
+	}
 	return
 }
 

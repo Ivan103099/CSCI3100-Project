@@ -16,7 +16,6 @@ type Account struct {
 	GroupID  int64          `json:"group_id"`
 	Email    string         `json:"email"`
 	Fullname string         `json:"fullname"`
-	Group    Group          `json:"group"`
 	Summary  AccountSummary `json:"summary"`
 	Passhash string         `json:"passhash"`
 }
@@ -26,6 +25,12 @@ type AccountSummary struct {
 	Expense float64 `json:"expense"`
 }
 
+type Budget struct {
+	CategoryID types.ID `json:"category_id"`
+	Amount     float64  `json:"amount"`
+	Category   Category `json:"category"`
+}
+
 type Category struct {
 	ID           types.ID      `json:"id"`
 	GroupID      int64         `json:"group_id"`
@@ -33,7 +38,7 @@ type Category struct {
 	Type         CategoryType  `json:"type"`
 	Emoji        string        `json:"emoji"`
 	Color        string        `json:"color"`
-	Group        Group         `json:"group"`
+	Budget       *Budget       `json:"budget,omitempty"`
 	Transactions []Transaction `json:"transactions"`
 }
 
@@ -41,6 +46,11 @@ type CreateAccount struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Fullname string `json:"fullname"`
+}
+
+type CreateBudget struct {
+	CategoryID types.ID `json:"cid"`
+	Amount     float64  `json:"amount"`
 }
 
 type CreateCategory struct {
@@ -55,10 +65,6 @@ type CreateTransaction struct {
 	Title      string          `json:"title"`
 	Amount     float64         `json:"amount"`
 	Timestamp  types.Timestamp `json:"timestamp"`
-}
-
-type Group struct {
-	ID int64 `json:"id"`
 }
 
 type Mutation struct {
