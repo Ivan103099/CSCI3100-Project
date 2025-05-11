@@ -6,10 +6,8 @@ import (
 	_ "embed"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/jmoiron/sqlx/reflectx"
 	"github.com/tnychn/sq"
 	"modernc.org/sqlite"
 
@@ -87,7 +85,7 @@ func New(config config.Config) Repository {
 
 func (r *repository) Initialize() (err error) {
 	r.db, err = sqlx.Open("sqlite", r.config.Database.URL.String())
-	r.db.Mapper = reflectx.NewMapperFunc("json", strings.ToLower)
+	// r.db.Mapper = reflectx.NewMapperFunc("json", strings.ToLower)
 	if err != nil {
 		return
 	}

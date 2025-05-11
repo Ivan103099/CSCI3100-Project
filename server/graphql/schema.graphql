@@ -1,11 +1,9 @@
+scalar ULID
+scalar Timestamp
+
 directive @auth(enabled: Boolean!) on FIELD_DEFINITION
 
 directive @validate(tag: String!) on INPUT_FIELD_DEFINITION
-
-directive @goTag(
-	key: String!
-	value: String
-) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 directive @goField(
 	name: String
@@ -14,34 +12,24 @@ directive @goField(
 	forceResolver: Boolean
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
-directive @goExtraField(
-	name: String
-	type: String!
-	description: String
-	overrideTags: String
-) repeatable on OBJECT | INPUT_OBJECT
+directive @goModel(
+	model: String
+	models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
-scalar ULID
-scalar Timestamp
+directive @goEnum(value: String) on ENUM_VALUE
 
-enum CategoryType {
-	INCOME
-	EXPENSE
+enum CategoryType @goModel(model: "finawise.app/server/models.CategoryType") {
+	INCOME @goEnum(value: "finawise.app/server/models.CategoryTypeIncome")
+	EXPENSE @goEnum(value: "finawise.app/server/models.CategoryTypeExpense")
 }
 
-type Account
-	@goExtraField(
-		name: "Passhash"
-		type: "string"
-		overrideTags: "json:\"passhash\""
-	)
-{
+type Account {
 	id: ID!
-	gid: ID! @goField(name: "GroupID") @goTag(key: "json", value: "group_id")
 	email: String!
 	fullname: String!
 
-	summary: AccountSummary! @goField(forceResolver: true)
+	summary: AccountSummary!
 }
 
 type AccountSummary {
@@ -51,37 +39,28 @@ type AccountSummary {
 
 type Category {
 	id: ULID!
-	gid: ID! @goField(name: "GroupID") @goTag(key: "json", value: "group_id")
 	name: String!
 	type: CategoryType!
 	emoji: String!
 	color: String!
 
-	budget: Budget @goField(forceResolver: true)
-	transactions: [Transaction!]! @goField(forceResolver: true)
+	budget: Budget
+	transactions: [Transaction!]!
 }
 
 type Transaction {
 	id: ULID!
-	cid: ULID!
-		@goField(name: "CategoryID")
-		@goTag(key: "json", value: "category_id")
-	aid: ID! @goField(name: "AccountID") @goTag(key: "json", value: "account_id")
 	title: String!
 	amount: Float!
 	timestamp: Timestamp!
 
-	category: Category! @goField(forceResolver: true)
-	account: Account! @goField(forceResolver: true)
+	category: Category!
 }
 
 type Budget {
-	cid: ULID!
-		@goField(name: "CategoryID")
-		@goTag(key: "json", value: "category_id")
 	amount: Float!
 
-	category: Category! @goField(forceResolver: true)
+	category: Category!
 }
 
 type Query {
@@ -90,6 +69,7 @@ type Query {
 	categories(ct: CategoryType): [Category!]! @auth(enabled: true)
 	transaction(id: ULID!): Transaction! @auth(enabled: true)
 	transactions(ct: CategoryType): [Transaction!]! @auth(enabled: true)
+	budget(cid: ULID!): Budget! @auth(enabled: true)
 	budgets: [Budget!]! @auth(enabled: true)
 }
 

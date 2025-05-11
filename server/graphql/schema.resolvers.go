@@ -39,12 +39,12 @@ func (r *categoryResolver) Transactions(ctx context.Context, obj *models.Categor
 }
 
 // CreateAccount is the resolver for the createAccount field.
-func (r *mutationResolver) CreateAccount(ctx context.Context, a models.CreateAccount) (models.Account, error) {
+func (r *mutationResolver) CreateAccount(ctx context.Context, a CreateAccount) (models.Account, error) {
 	return r.AccountService.Register(a.Email, a.Password, a.Fullname)
 }
 
 // CreateCategory is the resolver for the createCategory field.
-func (r *mutationResolver) CreateCategory(ctx context.Context, c models.CreateCategory) (cat models.Category, err error) {
+func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory) (cat models.Category, err error) {
 	session := ctx.Value("session").(account.Session)
 	cat = models.Category{
 		GroupID: session.GroupID,
@@ -62,7 +62,7 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, c models.CreateCa
 }
 
 // CreateTransaction is the resolver for the createTransaction field.
-func (r *mutationResolver) CreateTransaction(ctx context.Context, t models.CreateTransaction) (txn models.Transaction, err error) {
+func (r *mutationResolver) CreateTransaction(ctx context.Context, t CreateTransaction) (txn models.Transaction, err error) {
 	session := ctx.Value("session").(account.Session)
 	txn = models.Transaction{
 		CategoryID: t.CategoryID,
@@ -80,7 +80,7 @@ func (r *mutationResolver) CreateTransaction(ctx context.Context, t models.Creat
 }
 
 // CreateBudget is the resolver for the createBudget field.
-func (r *mutationResolver) CreateBudget(ctx context.Context, b models.CreateBudget) (bud models.Budget, err error) {
+func (r *mutationResolver) CreateBudget(ctx context.Context, b CreateBudget) (bud models.Budget, err error) {
 	bud = models.Budget{
 		CategoryID: b.CategoryID,
 		Amount:     b.Amount,
@@ -117,6 +117,11 @@ func (r *queryResolver) Transactions(ctx context.Context, ct *models.CategoryTyp
 	return r.Repository.ListTransactions(session.AccountID, nil, ct)
 }
 
+// Budget is the resolver for the budget field.
+func (r *queryResolver) Budget(ctx context.Context, cid types.ID) (models.Budget, error) {
+	return r.Repository.GetBudget(cid)
+}
+
 // Budgets is the resolver for the budgets field.
 func (r *queryResolver) Budgets(ctx context.Context) ([]models.Budget, error) {
 	session := ctx.Value("session").(account.Session)
@@ -126,11 +131,6 @@ func (r *queryResolver) Budgets(ctx context.Context) ([]models.Budget, error) {
 // Category is the resolver for the category field.
 func (r *transactionResolver) Category(ctx context.Context, obj *models.Transaction) (models.Category, error) {
 	return r.Repository.GetCategory(obj.CategoryID)
-}
-
-// Account is the resolver for the account field.
-func (r *transactionResolver) Account(ctx context.Context, obj *models.Transaction) (models.Account, error) {
-	return r.Repository.GetAccount(obj.AccountID)
 }
 
 // Account returns AccountResolver implementation.
