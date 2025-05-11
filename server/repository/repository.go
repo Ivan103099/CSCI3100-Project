@@ -43,8 +43,8 @@ func init() {
 	})
 }
 
-//go:embed schema.sql
-var rawSchemaSQL string
+//go:embed "schema.sql"
+var schema string
 
 var SQL = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
@@ -91,7 +91,7 @@ func (r *repository) Initialize() (err error) {
 	if err != nil {
 		return
 	}
-	_, err = r.db.Exec(rawSchemaSQL)
+	_, err = r.db.Exec(schema)
 	return
 }
 

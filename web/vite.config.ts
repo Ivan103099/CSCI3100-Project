@@ -13,5 +13,8 @@ export default defineConfig({
 	},
 	server: {
 		port: 8080,
+		proxy: {
+			"/api": "http://0.0.0.0:6969",
+		},
 	},
 });

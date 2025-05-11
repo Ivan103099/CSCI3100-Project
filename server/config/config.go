@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Debug  bool `env:"DEBUG" default:"false"`
+	URL    *url.URL `env:"URL"`
 	Server struct {
 		Host string `env:"HOST" default:"0.0.0.0"`
 		Port uint16 `env:"PORT" default:"6969"`

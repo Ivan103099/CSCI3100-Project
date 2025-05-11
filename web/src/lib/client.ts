@@ -3,7 +3,7 @@ import { atom, useSetAtom } from "jotai";
 import type { Account } from "./models";
 import { createClient } from "./graphql";
 
-export const BASE_URL = "http://localhost:6969/api/";
+export const BASE_URL = `${document.location.origin}/api/`;
 
 export const $account = atom<Account | undefined>(undefined);
 export const $authed = atom<boolean>((get) => get($account) !== undefined);

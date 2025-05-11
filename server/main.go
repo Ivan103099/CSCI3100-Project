@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -57,9 +58,10 @@ func newRequestBinder() *RequestBinder {
 func init() {
 	flag.Parse()
 
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if *debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
 	w := zerolog.NewConsoleWriter()
@@ -73,7 +75,9 @@ func main() {
 	config := config.MustLoad()
 	router := mux.NewRouter()
 
-	router.Use(middlewares.CORS(*debug))
+	if config.URL != nil {
+		router.Use(middlewares.CORS(*config.URL))
+	}
 	router.Use(func(handler http.Handler) http.Handler {
 		return http.MaxBytesHandler(handler, HTTPMaxBytes)
 	})
@@ -96,34 +100,31 @@ func main() {
 	container.Set(c, "debug", *debug)
 	container.Provide(c, "service/account", services.NewAccountService)
 
-	r := router.PathPrefix("/api").Subrouter()
 	for _, provider := range handlers.Handlers {
-		provider(c).Mount(r)
+		provider(c).Mount(router)
 	}
 
-	log.Debug().Msg("initializing dependencies")
 	if errs := c.Initialize(); errs != nil {
 		for name, err := range errs {
-			log.Error().Str("name", name).Msg(err.Error())
+			log.Error().Str("from", name).Msg(err.Error())
 		}
-		log.Error().Msgf("%d errors occurred", len(errs))
 		return
 	}
 
 	defer func() {
-		log.Debug().Msg("terminating dependencies")
 		if errs := c.Terminate(); errs != nil {
 			for name, err := range errs {
-				log.Error().Str("name", name).Msg(err.Error())
+				log.Error().Str("from", name).Msg(err.Error())
 			}
-			log.Error().Msgf("%d errors occurred", len(errs))
 		}
 	}()
 
 	server := http.Server{
-		Addr:     config.ServerAddress(),
-		Handler:  router,
-		ErrorLog: nil,
+		Addr:         config.ServerAddress(),
+		Handler:      router,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		ErrorLog:     nil,
 	}
 
 	log.Info().Msgf("server starts: http://%s/", server.Addr)
