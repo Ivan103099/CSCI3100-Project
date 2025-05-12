@@ -2,7 +2,15 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { useAtomValue } from "jotai";
 import { fromAbsolute, getLocalTimeZone, now } from "@internationalized/date";
-import { PieChart, Pie, BarChart, CartesianGrid, XAxis, Bar } from "recharts";
+import {
+	PieChart,
+	Pie,
+	BarChart,
+	Bar,
+	XAxis,
+	YAxis,
+	CartesianGrid,
+} from "recharts";
 import { Calendar, ArrowDown, ArrowUp, Coins, DollarSign } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -10,6 +18,7 @@ import { CategoryType, type AccountSummary } from "@/lib/models";
 import { $account } from "@/lib/client";
 import {
 	useAccountSummaryQuery,
+	useBudgetsQuery,
 	useCategoriesQuery,
 	useTransactionsQuery,
 } from "@/lib/graphql";
@@ -243,31 +252,6 @@ const CategorizedBreakdown = () => {
 	);
 };
 
-const BudgetPlan = () => {
-	const navigate = useNavigate();
-	return (
-		<Card className="flex flex-col justify-between h-full">
-			<Card.Header>
-				<Card.Title>Budget Plan</Card.Title>
-				<Card.Description>
-					Your budget progress for this month.
-				</Card.Description>
-			</Card.Header>
-			<Card.Content>{}</Card.Content>
-			<Card.Footer>
-				<Button
-					className="w-full"
-					variant="outline"
-					size="sm"
-					onPress={() => navigate("/budgets")}
-				>
-					View Details
-				</Button>
-			</Card.Footer>
-		</Card>
-	);
-};
-
 const DailyBalance = () => {
 	const [query] = useTransactionsQuery();
 
@@ -360,6 +344,110 @@ const DailyBalance = () => {
 	);
 };
 
+const BudgetProgress = () => {
+	const navigate = useNavigate();
+
+	const [query] = useBudgetsQuery();
+
+	const chart = React.useMemo(
+		() =>
+			(query.data?.budgets ?? []).reduce(
+				(result, budget) => {
+					result[budget.category.name] = {
+						label: `${budget.category.emoji} ${budget.category.name}`,
+					};
+					return result;
+				},
+				{
+					spent: { label: "Spent" },
+					remaining: { label: "Remaining" },
+				} as Record<string, { label: string }>,
+			),
+		[query.data],
+	);
+
+	const data = React.useMemo(() => {
+		return (query.data?.budgets ?? []).map((budget) => {
+			const spent = budget.category.transactions.reduce(
+				(acc, t) => acc + t.amount,
+				0,
+			);
+			return {
+				category: budget.category.name,
+				spent,
+				remaining: Math.max(budget.amount - spent, 0),
+			};
+		});
+	}, [query.data]);
+
+	const days = React.useMemo(() => {
+		const current = now(getLocalTimeZone());
+		return current.calendar.getDaysInMonth(current) - current.day;
+	}, []);
+
+	const remaining = React.useMemo(() => {
+		return data.reduce((acc, item) => acc + item.remaining, 0);
+	}, [data]);
+
+	return (
+		<Card className="flex flex-col justify-between h-full">
+			<Card.Header>
+				<Card.Title>Budget Progress</Card.Title>
+				<Card.Description>
+					{Object.keys(data).length === 0
+						? "Your budget progress for this month."
+						: remaining > 0
+							? `Your have ${remaining.toLocaleString("en-HK", {
+									style: "currency",
+									currency: "HKD",
+								})} left for ${days} days to spend.`
+							: "You spent all your budget for this month."}
+				</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<ChartContainer config={chart} className="w-full max-h-[200px]">
+					<BarChart data={data} layout="vertical">
+						<YAxis
+							type="category"
+							dataKey="category"
+							axisLine={false}
+							tickLine={false}
+						/>
+						<XAxis dataKey="spent" type="number" hide />
+						<XAxis dataKey="remaining" type="number" hide />
+						<ChartTooltip
+							cursor={Object.keys(data).length > 0}
+							content={<ChartTooltipContent />}
+						/>
+						<Bar
+							dataKey="spent"
+							layout="vertical"
+							fill="var(--color-rose-500)"
+							stackId="a"
+						/>
+						<Bar
+							dataKey="remaining"
+							layout="vertical"
+							fill="var(--color-emerald-500)"
+							stackId="a"
+						/>
+					</BarChart>
+				</ChartContainer>
+			</Card.Content>
+			<Card.Footer>
+				<Button
+					className="w-full"
+					variant="outline"
+					size="sm"
+					onPress={() => navigate("/budgets")}
+				>
+					View Details
+				</Button>
+			</Card.Footer>
+		</Card>
+	);
+};
+
 export default function AppDashboardPage() {
 	const account = useAtomValue($account);
 
@@ -395,7 +483,7 @@ export default function AppDashboardPage() {
 					<DailyBalance />
 				</div>
 				<div className="col-span-4">
-					<BudgetPlan />
+					<BudgetProgress />
 				</div>
 			</div>
 		</main>
