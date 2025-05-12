@@ -35,6 +35,7 @@ func newAuthHandler(c *container.Container) Handler {
 
 func (h *AuthHandler) Mount(router *mux.Router) {
 	r := router.PathPrefix("/api/auth").Subrouter()
+	r.Use(middlewares.RateLimit())
 	r.Use(middlewares.Session(h.config.Secret))
 	r.Handle("/login", h.handleLogin()).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/logout", h.handleLogout()).Methods(http.MethodPost, http.MethodOptions)
