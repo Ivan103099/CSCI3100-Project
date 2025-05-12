@@ -4,7 +4,11 @@ import { Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { CategoryType } from "@/lib/models";
-import { useCategoriesQuery, useCreateBudgetMutation } from "@/lib/graphql";
+import {
+	useBudgetsQuery,
+	useCategoriesQuery,
+	useCreateBudgetMutation,
+} from "@/lib/graphql";
 
 import Card from "@/components/Card";
 import Menu from "@/components/Menu";
@@ -28,12 +32,12 @@ const initBudgetForm = (): BudgetForm => ({
 const BudgetModal = () => {
 	const [form, setFormData] = React.useState(initBudgetForm());
 
-	const [query] = useCategoriesQuery(CategoryType.EXPENSE);
+	const [queryCategories] = useCategoriesQuery(CategoryType.EXPENSE);
 	const [, createBudget] = useCreateBudgetMutation();
 
 	const categories = React.useMemo(
-		() => query.data?.categories.filter((cat) => !cat.budget) ?? [],
-		[query.data],
+		() => queryCategories.data?.categories.filter((cat) => !cat.budget) ?? [],
+		[queryCategories.data],
 	);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -133,12 +137,7 @@ const BudgetModal = () => {
 };
 
 export default function AppBudgetsPage() {
-	const [query] = useCategoriesQuery(CategoryType.EXPENSE);
-
-	const categories = React.useMemo(
-		() => query.data?.categories.filter((cat) => cat.budget) ?? [],
-		[query.data],
-	);
+	const [query] = useBudgetsQuery();
 
 	return (
 		<main className="flex-1 p-4 md:p-8 space-y-4">
@@ -160,12 +159,15 @@ export default function AppBudgetsPage() {
 				</div>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				{categories.map((cat) => {
-					const total = cat.budget?.amount ?? 0;
-					const spent = cat.transactions.reduce((sum, t) => sum + t.amount, 0);
+				{(query.data?.budgets ?? []).map((budget) => {
+					const total = budget?.amount ?? 0;
+					const spent = budget.category.transactions.reduce(
+						(sum, t) => sum + t.amount,
+						0,
+					);
 					return (
 						<Card
-							key={cat.id}
+							key={budget.category.id}
 							className="w-full transition-all hover:shadow-lg hover:-translate-y-1"
 						>
 							<Card.Content className="pt-5 pb-3">
@@ -173,11 +175,13 @@ export default function AppBudgetsPage() {
 									<div className="flex items-center gap-3 overflow-hidden">
 										<span
 											className="flex items-center justify-center size-10 min-w-10 text-xl rounded-xl"
-											style={{ backgroundColor: cat.color }}
+											style={{ backgroundColor: budget.category.color }}
 										>
-											{cat.emoji}
+											{budget.category.emoji}
 										</span>
-										<p className="text-xl font-medium truncate">{cat.name}</p>
+										<p className="text-xl font-medium truncate">
+											{budget.category.name}
+										</p>
 									</div>
 									<Menu.Trigger>
 										<Button variant="ghost" className="p-2 h-5">

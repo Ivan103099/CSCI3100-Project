@@ -101,7 +101,9 @@ export const useCategoriesQuery = (type?: CategoryType) =>
 export const useBudgetsQuery = () =>
 	useQuery<{
 		budgets: (Budget & {
-			category: Category;
+			category: Category & {
+				transactions: Transaction[];
+			};
 		})[];
 	}>({
 		query: gql`
@@ -114,6 +116,12 @@ export const useBudgetsQuery = () =>
             type
             emoji
             color
+            transactions {
+              id
+              title
+              amount
+              timestamp
+            }
           }
         }
       }
