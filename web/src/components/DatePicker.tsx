@@ -83,53 +83,55 @@ const DatePicker = <T extends Aria.DateValue>({
 	label?: string;
 	description?: string;
 }) => (
-	<Aria.DatePicker
-		className={cn("group flex flex-col gap-2", className)}
-		{...props}
-	>
-		<Aria.Label className="text-sm font-medium leading-none">
-			{label}
-		</Aria.Label>
-		<Aria.Group
-			className={cn(
-				"relative flex h-10 w-full items-center overflow-hidden rounded-md border border-input bg-background pl-3 py-2 text-sm ring-offset-background",
-				"data-[focus-within]:outline-none data-[focus-within]:ring-2 data-[focus-within]:ring-ring data-[focus-within]:ring-offset-2",
-				"data-[disabled]:opacity-50",
-			)}
+	<Aria.I18nProvider locale="en-HK">
+		<Aria.DatePicker
+			className={cn("group flex flex-col gap-2", className)}
+			{...props}
 		>
-			<Aria.DateInput className="text-sm flex-1">
-				{(segment) => (
-					<Aria.DateSegment
-						segment={segment}
-						className={cn(
-							"type-literal:px-0 inline rounded p-0.5 caret-transparent outline-0",
-							"data-[placeholder]:text-muted-foreground",
-							"data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
-							"data-[focused]:bg-accent data-[focused]:text-accent-foreground",
-							"data-[invalid]:data-[focused]:bg-destructive data-[invalid]:data-[focused]:data-[placeholder]:text-destructive-foreground data-[invalid]:data-[focused]:text-destructive-foreground data-[invalid]:data-[placeholder]:text-destructive data-[invalid]:text-destructive",
-						)}
-					/>
+			<Aria.Label className="text-sm font-medium leading-none">
+				{label}
+			</Aria.Label>
+			<Aria.Group
+				className={cn(
+					"relative flex h-10 w-full items-center overflow-hidden rounded-md border border-input bg-background pl-3 py-2 text-sm ring-offset-background",
+					"data-[focus-within]:outline-none data-[focus-within]:ring-2 data-[focus-within]:ring-ring data-[focus-within]:ring-offset-2",
+					"data-[disabled]:opacity-50",
 				)}
-			</Aria.DateInput>
-			<Button
-				size="icon"
-				variant="ghost"
-				className="mr-1 size-6 data-[focus-visible]:ring-offset-0"
 			>
-				<CalendarIcon aria-hidden className="size-4" />
-			</Button>
-		</Aria.Group>
-		{description && (
-			<Aria.Text className="text-sm text-muted-foreground" slot="description">
-				{description}
-			</Aria.Text>
-		)}
-		<Popover className="p-3">
-			<Aria.Dialog className="flex w-full flex-col space-y-4 outline-none sm:flex-row sm:space-x-4 sm:space-y-0">
-				<Calendar />
-			</Aria.Dialog>
-		</Popover>
-	</Aria.DatePicker>
+				<Aria.DateInput className="text-sm flex-1">
+					{(segment) => (
+						<Aria.DateSegment
+							segment={segment}
+							className={cn(
+								"type-literal:px-0 inline rounded p-0.5 caret-transparent outline-0",
+								"data-[placeholder]:text-muted-foreground",
+								"data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+								"data-[focused]:bg-accent data-[focused]:text-accent-foreground",
+								"data-[invalid]:data-[focused]:bg-destructive data-[invalid]:data-[focused]:data-[placeholder]:text-destructive-foreground data-[invalid]:data-[focused]:text-destructive-foreground data-[invalid]:data-[placeholder]:text-destructive data-[invalid]:text-destructive",
+							)}
+						/>
+					)}
+				</Aria.DateInput>
+				<Button
+					size="icon"
+					variant="ghost"
+					className="mr-1 size-6 data-[focus-visible]:ring-offset-0"
+				>
+					<CalendarIcon aria-hidden className="size-4" />
+				</Button>
+			</Aria.Group>
+			{description && (
+				<Aria.Text className="text-sm text-muted-foreground" slot="description">
+					{description}
+				</Aria.Text>
+			)}
+			<Popover className="p-3">
+				<Aria.Dialog className="flex w-full flex-col space-y-4 outline-none sm:flex-row sm:space-x-4 sm:space-y-0">
+					<Calendar />
+				</Aria.Dialog>
+			</Popover>
+		</Aria.DatePicker>
+	</Aria.I18nProvider>
 );
 
 export default DatePicker;

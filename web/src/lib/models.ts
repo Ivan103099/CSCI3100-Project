@@ -12,6 +12,11 @@ export type Account = {
 	fullname: string;
 };
 
+export type AccountSummary = {
+	income: number;
+	expense: number;
+};
+
 export type Category = {
 	id: string;
 	name: string;
@@ -20,15 +25,14 @@ export type Category = {
 	color: string;
 };
 
+export type Budget = {
+	amount: number;
+};
+
 export type Transaction = {
 	id: string;
 	cid: string;
 	title: string;
 	amount: number;
 	timestamp: number;
-};
-
-export type AccountSummary = {
-	income: number;
-	expense: number;
 };

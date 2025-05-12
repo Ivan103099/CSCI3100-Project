@@ -12,9 +12,10 @@ import { getDefaultStore } from "jotai";
 import type {
 	Account,
 	AccountSummary,
+	Budget,
 	Category,
-	Transaction,
 	CategoryType,
+	Transaction,
 } from "./models";
 import { BASE_URL, $account } from "./client";
 
@@ -70,6 +71,7 @@ export const useAccountSummaryQuery = () =>
 export const useCategoriesQuery = (type?: CategoryType) =>
 	useQuery<{
 		categories: (Category & {
+			budget?: Budget;
 			transactions: Transaction[];
 		})[];
 	}>({
@@ -81,6 +83,9 @@ export const useCategoriesQuery = (type?: CategoryType) =>
           name
           emoji
           color
+          budget {
+            amount
+          }
           transactions {
             id
             title
@@ -91,6 +96,28 @@ export const useCategoriesQuery = (type?: CategoryType) =>
       }
     `,
 		variables: { type },
+	});
+
+export const useBudgetsQuery = () =>
+	useQuery<{
+		budgets: (Budget & {
+			category: Category;
+		})[];
+	}>({
+		query: gql`
+      query {
+        budgets {
+          amount
+          category {
+            id
+            name
+            type
+            emoji
+            color
+          }
+        }
+      }
+    `,
 	});
 
 export const useTransactionsQuery = (type?: CategoryType) =>
@@ -142,6 +169,20 @@ export const useCreateCategoryMutation = () =>
         color: $color
       }) {
         id
+      }
+    }
+  `);
+
+export const useCreateBudgetMutation = () =>
+	useMutation<{ createBudget: { category: { id: string } } }>(gql`
+    mutation ($cid: ULID!, $amount: Float!) {
+      createBudget(b: {
+        cid: $cid
+        amount: $amount
+      }) {
+        category {
+          id
+        }
       }
     }
   `);

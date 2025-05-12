@@ -71,9 +71,6 @@ const CategoryModal = () => {
 				<>
 					<Modal.Header className="mb-2">
 						<Modal.Title>Create New Category</Modal.Title>
-						<Modal.Description className="text-sm text-muted-foreground">
-							Fill in the details of your new category.
-						</Modal.Description>
 					</Modal.Header>
 					<Form
 						id="form"
@@ -175,78 +172,77 @@ export default function AppCategoriesPage() {
 					</Modal.Trigger>
 				</div>
 			</div>
-			<SearchField
-				value={search}
-				onChange={setSearch}
-				placeholder="Search Categories..."
-			/>
-			<Tabs
-				selectedKey={tab}
-				onSelectionChange={(key) => setTab(key.toString())}
-			>
-				<Tabs.Nav className="self-start">
-					<Tabs.NavItem id="ALL">All</Tabs.NavItem>
-					<Tabs.NavItem id={CategoryType.EXPENSE}>Expense</Tabs.NavItem>
-					<Tabs.NavItem id={CategoryType.INCOME}>Income</Tabs.NavItem>
-				</Tabs.Nav>
-				<Tabs.Content
-					id={tab}
-					className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+			<div className="flex justify-between">
+				<Tabs
+					selectedKey={tab}
+					onSelectionChange={(key) => setTab(key.toString())}
 				>
-					{categories.map((cat) => (
-						<Card
-							key={cat.id}
-							className="w-full transition-all hover:shadow-lg hover:-translate-y-1"
-						>
-							<Card.Content className="pt-5">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-3 overflow-hidden">
-										<span
-											className="flex items-center justify-center size-10 min-w-10 text-xl rounded-xl"
-											style={{ backgroundColor: cat.color }}
-										>
-											{cat.emoji}
-										</span>
-										<p className="text-xl font-medium truncate">{cat.name}</p>
-									</div>
-									<Menu.Trigger>
-										<Button variant="ghost" className="p-2 h-5">
-											<MoreHorizontal className="size-4" />
-										</Button>
-										<Menu className="min-w-28">
-											<Menu.Item onAction={() => ({})}>
-												<Edit className="size-4" />
-												Edit
-											</Menu.Item>
-											<Menu.Separator />
-											<Menu.Item
-												className="font-medium text-rose-500 focus:text-rose-500"
-												onAction={() => ({})}
-											>
-												<Trash className="size-4" />
-												Delete
-											</Menu.Item>
-										</Menu>
-									</Menu.Trigger>
+					<Tabs.Nav className="self-start">
+						<Tabs.NavItem id="ALL">All</Tabs.NavItem>
+						<Tabs.NavItem id={CategoryType.EXPENSE}>Expense</Tabs.NavItem>
+						<Tabs.NavItem id={CategoryType.INCOME}>Income</Tabs.NavItem>
+					</Tabs.Nav>
+				</Tabs>
+				<SearchField
+					value={search}
+					onChange={setSearch}
+					placeholder="Search Categories..."
+				/>
+			</div>
+			<div id={tab} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+				{categories.map((cat) => (
+					<Card
+						key={cat.id}
+						className="w-full transition-all hover:shadow-lg hover:-translate-y-1"
+					>
+						<Card.Content className="pt-5">
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-3 overflow-hidden">
+									<span
+										className="flex items-center justify-center size-10 min-w-10 text-xl rounded-xl"
+										style={{ backgroundColor: cat.color }}
+									>
+										{cat.emoji}
+									</span>
+									<p className="text-xl font-medium truncate">{cat.name}</p>
 								</div>
-							</Card.Content>
-							<Card.Footer className="flex justify-between items-center gap-3 py-3 rounded-b-md bg-secondary">
-								<span className="font-medium text-sm truncate">
-									{cat.transactions.length} Transactions
-								</span>
-								<span className="font-bold text-lg">
-									{cat.transactions
-										.reduce((sum, t) => sum + t.amount, 0)
-										.toLocaleString("en-HK", {
-											style: "currency",
-											currency: "HKD",
-										})}
-								</span>
-							</Card.Footer>
-						</Card>
-					))}
-				</Tabs.Content>
-			</Tabs>
+								<Menu.Trigger>
+									<Button variant="ghost" className="p-2 h-5">
+										<MoreHorizontal className="size-4" />
+									</Button>
+									<Menu className="min-w-28">
+										<Menu.Item onAction={() => ({})}>
+											<Edit className="size-4" />
+											Edit
+										</Menu.Item>
+										<Menu.Separator />
+										<Menu.Item
+											className="font-medium text-rose-500 focus:text-rose-500"
+											onAction={() => ({})}
+										>
+											<Trash className="size-4" />
+											Delete
+										</Menu.Item>
+									</Menu>
+								</Menu.Trigger>
+							</div>
+						</Card.Content>
+						<Card.Footer className="flex justify-between items-center gap-3 py-3 rounded-b-md bg-secondary/50">
+							<span className="font-medium text-sm truncate">
+								{cat.transactions.length} Transactions
+							</span>
+							<span className="font-bold text-lg">
+								{cat.transactions
+									.reduce((sum, t) => sum + t.amount, 0)
+									.toLocaleString("en-HK", {
+										style: "currency",
+										currency: "HKD",
+									})}
+							</span>
+						</Card.Footer>
+					</Card>
+				))}
+			</div>
 		</main>
 	);
 }

@@ -12,6 +12,7 @@ import { AuthLayout, AuthLoginPage, AuthRegisterPage } from "./pages/auth";
 import {
 	AppLayout,
 	AppDashboardPage,
+	AppBudgetsPage,
 	AppTransactionsPage,
 	AppCategoriesPage,
 } from "./pages/app";
@@ -30,7 +31,7 @@ const App = () => {
 					<Route element={<AppLayout />}>
 						<Route index element={<AppDashboardPage />} />
 						<Route path="transactions" element={<AppTransactionsPage />} />
-						<Route path="budgets" />
+						<Route path="budgets" element={<AppBudgetsPage />} />
 						<Route path="categories" element={<AppCategoriesPage />} />
 					</Route>
 					<Route element={<AuthLayout />}>

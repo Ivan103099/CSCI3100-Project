@@ -16,6 +16,7 @@ import {
 	Plus,
 } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { CategoryType } from "@/lib/models";
 import { $account, useLogoutRequest } from "@/lib/client";
 import {
@@ -35,6 +36,7 @@ import { toasts } from "@/components/Toast";
 
 export { default as AppDashboardPage } from "./app/index";
 export { default as AppTransactionsPage } from "./app/transactions";
+export { default as AppBudgetsPage } from "./app/budgets";
 export { default as AppCategoriesPage } from "./app/categories";
 
 const LINKS = [
@@ -130,9 +132,6 @@ const TransactionModal = () => {
 				<>
 					<Modal.Header className="mb-2">
 						<Modal.Title>Create New Transaction</Modal.Title>
-						<Modal.Description className="text-sm text-muted-foreground">
-							Fill in the details of your new transaction.
-						</Modal.Description>
 					</Modal.Header>
 					<Form
 						id="form"
@@ -269,7 +268,12 @@ export function AppLayout() {
 	if (queryAccount.error) return <Navigate to="/login" />;
 	return (
 		<div className="flex flex-col">
-			<header className="sticky top-0 z-10 py-2 px-5 flex items-center shadow-sm border-b border-border bg-background">
+			<header
+				className={cn(
+					"sticky top-0 z-10 py-2 px-5 flex items-center shadow-sm border-b border-border",
+					"bg-gradient-to-r from-background via-background to-background/80 backdrop-blur",
+				)}
+			>
 				<span className="text-lg font-bold font-display tracking-tight select-none">
 					FINAWISE
 				</span>

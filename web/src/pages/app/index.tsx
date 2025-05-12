@@ -305,11 +305,13 @@ const DailyBalance = () => {
 
 	const most = React.useMemo(
 		() =>
-			data.reduce((m, i) => (m.expense > i.expense ? m : i), {
-				day: 0,
-				expense: 0,
-				income: 0,
-			}),
+			data
+				.filter((item) => item.income > 0 || item.expense > 0)
+				.reduce((m, i) => (m.expense > i.expense ? m : i), {
+					day: 0,
+					expense: 0,
+					income: 0,
+				}),
 		[data],
 	);
 
@@ -336,7 +338,10 @@ const DailyBalance = () => {
 							axisLine={false}
 							interval={0}
 						/>
-						<ChartTooltip content={<ChartTooltipContent hideLabel />} />
+						<ChartTooltip
+							cursor={most.day !== 0}
+							content={<ChartTooltipContent hideLabel />}
+						/>
 						<ChartLegend content={<ChartLegendContent />} />
 						<Bar
 							dataKey="income"
