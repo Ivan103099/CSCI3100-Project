@@ -46,16 +46,7 @@ const BudgetModal = () => {
 			cid: form.category,
 			amount: form.amount,
 		}).then(({ error, data }) => {
-			if (error)
-				toasts.add(
-					{
-						title: "Budget Create Failed",
-						description: error.message,
-						variant: "destructive",
-					},
-					{ timeout: 5000 },
-				);
-			else
+			if (!error)
 				toasts.add(
 					{
 						title: "Budget Created",
@@ -90,6 +81,7 @@ const BudgetModal = () => {
 							isRequired
 							minValue={0}
 							value={form.amount}
+							validate={(value) => (value > 0 ? null : "Invalid amount.")}
 							onChange={(value) => setFormData({ ...form, amount: value })}
 							formatOptions={{
 								style: "currency",

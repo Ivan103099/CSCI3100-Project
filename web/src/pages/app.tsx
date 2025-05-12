@@ -105,16 +105,7 @@ const TransactionModal = () => {
 			},
 			{ additionalTypenames: ["AccountSummary"] },
 		).then(({ error, data }) => {
-			if (error)
-				toasts.add(
-					{
-						title: "Transaction Create Failed",
-						description: error.message,
-						variant: "destructive",
-					},
-					{ timeout: 5000 },
-				);
-			else
+			if (!error)
 				toasts.add(
 					{
 						title: "Transaction Created",
@@ -150,6 +141,7 @@ const TransactionModal = () => {
 								isRequired
 								minValue={0}
 								value={form.amount}
+								validate={(value) => (value > 0 ? null : "Invalid amount.")}
 								onChange={(value) => setFormData({ ...form, amount: value })}
 								formatOptions={{
 									style: "currency",

@@ -44,16 +44,7 @@ const CategoryModal = () => {
 			color: form.color.toString("hex"),
 			type: form.type,
 		}).then(({ error, data }) => {
-			if (error)
-				toasts.add(
-					{
-						title: "Category Create Failed",
-						description: error.message,
-						variant: "destructive",
-					},
-					{ timeout: 5000 },
-				);
-			else
+			if (!error)
 				toasts.add(
 					{
 						title: "Category Created",

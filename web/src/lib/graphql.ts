@@ -19,6 +19,8 @@ import type {
 } from "./models";
 import { BASE_URL, $account } from "./client";
 
+import { toasts } from "@/components/Toast";
+
 const store = getDefaultStore();
 
 let client: Client;
@@ -29,9 +31,14 @@ export const createClient = () => {
 		exchanges: [
 			cacheExchange,
 			mapExchange({
-				onError(_error) {
+				onError(error) {
 					createClient();
 					store.set($account, undefined);
+					toasts.add({
+						title: "Error",
+						description: error.message,
+						variant: "destructive",
+					});
 				},
 			}),
 			fetchExchange,
