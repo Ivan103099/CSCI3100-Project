@@ -169,7 +169,17 @@ export default function AppTransactionsPage() {
 		[query.data, search, filters],
 	);
 
-	if (query.error) return <></>;
+	const handleExport = () => {
+		const data = JSON.stringify(query.data?.transactions ?? [], null, 2);
+		const blob = new Blob([data], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.download = "transactions.json";
+		link.href = url;
+		link.click();
+		link.remove();
+	};
+
 	return (
 		<main className="flex-1 flex flex-col p-4 md:p-8 space-y-4">
 			<div className="flex items-center justify-between">
@@ -180,7 +190,7 @@ export default function AppTransactionsPage() {
 					</div>
 				</div>
 				<div className="flex items-center gap-2">
-					<Button>
+					<Button onPress={() => handleExport()}>
 						<Download className="size-4" />
 						Export Data
 					</Button>

@@ -70,7 +70,6 @@ const SummaryCards = () => {
 		return { balance, income, expense, average };
 	}, [query.data, days]);
 
-	if (query.error) return <></>;
 	return (
 		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 			{Object.entries(summary)
@@ -115,7 +114,6 @@ const RecentTransactions = () => {
 
 	const [query] = useTransactionsQuery();
 
-	if (query.error) return <></>;
 	return (
 		<Card className="flex flex-col h-full">
 			<Card.Header>
@@ -211,7 +209,6 @@ const CategorizedBreakdown = () => {
 		[type, data],
 	);
 
-	if (query.error) return <></>;
 	return (
 		<Card className="flex flex-col h-full">
 			<Card.Header className="flex-row items-center justify-between gap-2">
