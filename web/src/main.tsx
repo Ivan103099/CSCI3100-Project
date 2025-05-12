@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { HashRouter, Routes, Route } from "react-router";
 import { useAtomValue } from "jotai";
 import { Provider } from "urql";
 
@@ -49,8 +49,8 @@ const body = document.querySelector("body");
 // biome-ignore lint/style/noNonNullAssertion: must exist
 createRoot(body!).render(
 	<React.StrictMode>
-		<BrowserRouter>
+		<HashRouter>
 			<App />
-		</BrowserRouter>
+		</HashRouter>
 	</React.StrictMode>,
 );

@@ -34,11 +34,15 @@ export const createClient = () => {
 				onError(error) {
 					createClient();
 					store.set($account, undefined);
-					toasts.add({
-						title: "Error",
-						description: error.message,
-						variant: "destructive",
-					});
+					if (error.response?.status !== 401)
+						toasts.add(
+							{
+								title: "Error",
+								description: error.message,
+								variant: "destructive",
+							},
+							{ timeout: 5000 },
+						);
 				},
 			}),
 			fetchExchange,
