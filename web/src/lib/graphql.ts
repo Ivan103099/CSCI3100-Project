@@ -154,19 +154,6 @@ export const useTransactionsQuery = (type?: CategoryType) =>
 		variables: { type },
 	});
 
-export const useCreateAccountMutation = () =>
-	useMutation<{ createAccount: { id: number } }>(gql`
-    mutation ($email: String!, $password: String!, $fullname: String!) {
-      createAccount(a: {
-        email: $email
-        password: $password
-        fullname: $fullname
-      }) {
-        id
-      }
-    }
-  `);
-
 export const useCreateCategoryMutation = () =>
 	useMutation<{ createCategory: { id: string } }>(gql`
     mutation ($name: String!, $type: CategoryType!, $emoji: String!, $color: String!) {

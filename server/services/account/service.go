@@ -1,6 +1,8 @@
 package account
 
 import (
+	"fmt"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"finawise.app/server/models"
@@ -8,8 +10,9 @@ import (
 )
 
 var (
-	ErrNotFound = repository.ErrNoRows
-	ErrPassword = bcrypt.ErrMismatchedHashAndPassword
+	ErrNotFound   = repository.ErrNoRows
+	ErrPassword   = bcrypt.ErrMismatchedHashAndPassword
+	ErrLicenseKey = fmt.Errorf("invalid license key")
 )
 
 type Service struct {
@@ -20,7 +23,7 @@ func NewService(repo repository.Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Register(email, password, fullname string) (a models.Account, err error) {
+func (s *Service) Register(email, password, fullname, key string) (a models.Account, err error) {
 	passhash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return
@@ -30,8 +33,11 @@ func (s *Service) Register(email, password, fullname string) (a models.Account, 
 		Fullname: fullname,
 		Passhash: string(passhash),
 	}
-	id, err := s.repo.CreateAccount(a)
+	id, err := s.repo.CreateAccount(a, key)
 	if err != nil {
+		if err == repository.ErrNoRows {
+			err = ErrLicenseKey
+		}
 		return
 	}
 	a.ID = id

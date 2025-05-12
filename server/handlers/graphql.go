@@ -49,15 +49,8 @@ func newGraphQLHandler(c *container.Container) Handler {
 func (h *GraphQLHandler) Mount(router *mux.Router) {
 	config := graphql.Config{
 		Resolvers: &graphql.Resolver{
-			Repository:     h.repo,
-			AccountService: h.account,
+			Repository: h.repo,
 		},
-	}
-	config.Directives.Auth = func(ctx context.Context, obj any, next gqlgen.Resolver, enabled bool) (any, error) {
-		if enabled && ctx.Value("session") == nil {
-			return nil, gqlerror.Errorf("unauthorized")
-		}
-		return next(ctx)
 	}
 	config.Directives.Validate = func(ctx context.Context, obj any, next gqlgen.Resolver, tag string) (res any, err error) {
 		res, err = next(ctx)
@@ -77,9 +70,6 @@ func (h *GraphQLHandler) Mount(router *mux.Router) {
 	handler.AddTransport(transport.GET{})
 	handler.AddTransport(transport.POST{})
 	handler.Use(extension.Introspection{})
-	handler.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New[string](100),
-	})
 
 	handler.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 	handler.SetErrorPresenter(func(ctx context.Context, e error) (err *gqlerror.Error) {
@@ -104,6 +94,6 @@ func (h *GraphQLHandler) Mount(router *mux.Router) {
 
 	r := router.PathPrefix("/api/graphql").Subrouter()
 	r.Use(middlewares.RateLimit())
-	r.Handle("", middlewares.Session(h.config.Secret)(handler))
+	r.Handle("", middlewares.Session(h.config.Secret, true)(handler))
 	r.Handle("/playground", playground.Handler("", "/api/graphql"))
 }

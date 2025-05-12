@@ -38,11 +38,6 @@ func (r *categoryResolver) Transactions(ctx context.Context, obj *models.Categor
 	return r.Repository.ListTransactions(session.AccountID, &obj.ID, nil)
 }
 
-// CreateAccount is the resolver for the createAccount field.
-func (r *mutationResolver) CreateAccount(ctx context.Context, a CreateAccount) (models.Account, error) {
-	return r.AccountService.Register(a.Email, a.Password, a.Fullname)
-}
-
 // CreateCategory is the resolver for the createCategory field.
 func (r *mutationResolver) CreateCategory(ctx context.Context, c CreateCategory) (cat models.Category, err error) {
 	session := ctx.Value("session").(account.Session)

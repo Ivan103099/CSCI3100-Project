@@ -49,7 +49,6 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	Auth     func(ctx context.Context, obj any, next graphql.Resolver, enabled bool) (res any, err error)
 	Validate func(ctx context.Context, obj any, next graphql.Resolver, tag string) (res any, err error)
 }
 
@@ -82,7 +81,6 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateAccount     func(childComplexity int, a CreateAccount) int
 		CreateBudget      func(childComplexity int, b CreateBudget) int
 		CreateCategory    func(childComplexity int, c CreateCategory) int
 		CreateTransaction func(childComplexity int, t CreateTransaction) int
@@ -117,7 +115,6 @@ type CategoryResolver interface {
 	Transactions(ctx context.Context, obj *models.Category) ([]models.Transaction, error)
 }
 type MutationResolver interface {
-	CreateAccount(ctx context.Context, a CreateAccount) (models.Account, error)
 	CreateCategory(ctx context.Context, c CreateCategory) (models.Category, error)
 	CreateTransaction(ctx context.Context, t CreateTransaction) (models.Transaction, error)
 	CreateBudget(ctx context.Context, b CreateBudget) (models.Budget, error)
@@ -257,18 +254,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Category.Type(childComplexity), true
-
-	case "Mutation.createAccount":
-		if e.complexity.Mutation.CreateAccount == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createAccount_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateAccount(childComplexity, args["a"].(CreateAccount)), true
 
 	case "Mutation.createBudget":
 		if e.complexity.Mutation.CreateBudget == nil {
@@ -411,7 +396,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputCreateAccount,
 		ec.unmarshalInputCreateBudget,
 		ec.unmarshalInputCreateCategory,
 		ec.unmarshalInputCreateTransaction,
@@ -531,34 +515,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) dir_auth_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.dir_auth_argsEnabled(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["enabled"] = arg0
-	return args, nil
-}
-func (ec *executionContext) dir_auth_argsEnabled(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (bool, error) {
-	if _, ok := rawArgs["enabled"]; !ok {
-		var zeroVal bool
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("enabled"))
-	if tmp, ok := rawArgs["enabled"]; ok {
-		return ec.unmarshalNBoolean2bool(ctx, tmp)
-	}
-
-	var zeroVal bool
-	return zeroVal, nil
-}
-
 func (ec *executionContext) dir_validate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -584,29 +540,6 @@ func (ec *executionContext) dir_validate_argsTag(
 	}
 
 	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_createAccount_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_createAccount_argsA(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["a"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_createAccount_argsA(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (CreateAccount, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("a"))
-	if tmp, ok := rawArgs["a"]; ok {
-		return ec.unmarshalNCreateAccount2finawiseᚗappᚋserverᚋgraphqlᚐCreateAccount(ctx, tmp)
-	}
-
-	var zeroVal CreateAccount
 	return zeroVal, nil
 }
 
@@ -1591,98 +1524,6 @@ func (ec *executionContext) fieldContext_Category_transactions(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createAccount(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateAccount(rctx, fc.Args["a"].(CreateAccount))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, false)
-			if err != nil {
-				var zeroVal models.Account
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Account
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Account); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Account`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(models.Account)
-	fc.Result = res
-	return ec.marshalNAccount2finawiseᚗappᚋserverᚋmodelsᚐAccount(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createAccount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Account_id(ctx, field)
-			case "email":
-				return ec.fieldContext_Account_email(ctx, field)
-			case "fullname":
-				return ec.fieldContext_Account_fullname(ctx, field)
-			case "summary":
-				return ec.fieldContext_Account_summary(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createAccount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createCategory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createCategory(ctx, field)
 	if err != nil {
@@ -1696,35 +1537,8 @@ func (ec *executionContext) _Mutation_createCategory(ctx context.Context, field 
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateCategory(rctx, fc.Args["c"].(CreateCategory))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Category
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Category
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Category); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Category`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateCategory(rctx, fc.Args["c"].(CreateCategory))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1794,35 +1608,8 @@ func (ec *executionContext) _Mutation_createTransaction(ctx context.Context, fie
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateTransaction(rctx, fc.Args["t"].(CreateTransaction))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Transaction
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Transaction
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Transaction); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Transaction`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTransaction(rctx, fc.Args["t"].(CreateTransaction))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1888,35 +1675,8 @@ func (ec *executionContext) _Mutation_createBudget(ctx context.Context, field gr
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateBudget(rctx, fc.Args["b"].(CreateBudget))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Budget
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Budget
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Budget); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Budget`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateBudget(rctx, fc.Args["b"].(CreateBudget))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1976,35 +1736,8 @@ func (ec *executionContext) _Query_account(ctx context.Context, field graphql.Co
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Account(rctx)
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Account
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Account
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Account); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Account`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Account(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2057,35 +1790,8 @@ func (ec *executionContext) _Query_category(ctx context.Context, field graphql.C
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Category(rctx, fc.Args["id"].(types.ID))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Category
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Category
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Category); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Category`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Category(rctx, fc.Args["id"].(types.ID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2155,35 +1861,8 @@ func (ec *executionContext) _Query_categories(ctx context.Context, field graphql
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Categories(rctx, fc.Args["ct"].(*models.CategoryType))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal []models.Category
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal []models.Category
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.([]models.Category); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []finawise.app/server/models.Category`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Categories(rctx, fc.Args["ct"].(*models.CategoryType))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2253,35 +1932,8 @@ func (ec *executionContext) _Query_transaction(ctx context.Context, field graphq
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Transaction(rctx, fc.Args["id"].(types.ID))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Transaction
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Transaction
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Transaction); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Transaction`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Transaction(rctx, fc.Args["id"].(types.ID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2347,35 +1999,8 @@ func (ec *executionContext) _Query_transactions(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Transactions(rctx, fc.Args["ct"].(*models.CategoryType))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal []models.Transaction
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal []models.Transaction
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.([]models.Transaction); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []finawise.app/server/models.Transaction`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Transactions(rctx, fc.Args["ct"].(*models.CategoryType))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2441,35 +2066,8 @@ func (ec *executionContext) _Query_budgets(ctx context.Context, field graphql.Co
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Budgets(rctx)
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal []models.Budget
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal []models.Budget
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.([]models.Budget); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []finawise.app/server/models.Budget`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Budgets(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4823,107 +4421,6 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputCreateAccount(ctx context.Context, obj any) (CreateAccount, error) {
-	var it CreateAccount
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"email", "password", "fullname"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "email":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
-
-			directive1 := func(ctx context.Context) (any, error) {
-				tag, err := ec.unmarshalNString2string(ctx, "required,email")
-				if err != nil {
-					var zeroVal string
-					return zeroVal, err
-				}
-				if ec.directives.Validate == nil {
-					var zeroVal string
-					return zeroVal, errors.New("directive validate is not implemented")
-				}
-				return ec.directives.Validate(ctx, obj, directive0, tag)
-			}
-
-			tmp, err := directive1(ctx)
-			if err != nil {
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-			if data, ok := tmp.(string); ok {
-				it.Email = data
-			} else {
-				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-		case "password":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
-			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
-
-			directive1 := func(ctx context.Context) (any, error) {
-				tag, err := ec.unmarshalNString2string(ctx, "required,min=8,max=30")
-				if err != nil {
-					var zeroVal string
-					return zeroVal, err
-				}
-				if ec.directives.Validate == nil {
-					var zeroVal string
-					return zeroVal, errors.New("directive validate is not implemented")
-				}
-				return ec.directives.Validate(ctx, obj, directive0, tag)
-			}
-
-			tmp, err := directive1(ctx)
-			if err != nil {
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-			if data, ok := tmp.(string); ok {
-				it.Password = data
-			} else {
-				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-		case "fullname":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fullname"))
-			directive0 := func(ctx context.Context) (any, error) { return ec.unmarshalNString2string(ctx, v) }
-
-			directive1 := func(ctx context.Context) (any, error) {
-				tag, err := ec.unmarshalNString2string(ctx, "required,max=30,printascii")
-				if err != nil {
-					var zeroVal string
-					return zeroVal, err
-				}
-				if ec.directives.Validate == nil {
-					var zeroVal string
-					return zeroVal, errors.New("directive validate is not implemented")
-				}
-				return ec.directives.Validate(ctx, obj, directive0, tag)
-			}
-
-			tmp, err := directive1(ctx)
-			if err != nil {
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-			if data, ok := tmp.(string); ok {
-				it.Fullname = data
-			} else {
-				err := fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
-				return it, graphql.ErrorOnPath(ctx, err)
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputCreateBudget(ctx context.Context, obj any) (CreateBudget, error) {
 	var it CreateBudget
 	asMap := map[string]any{}
@@ -5621,13 +5118,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "createAccount":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createAccount(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "createCategory":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCategory(ctx, field)
@@ -6424,11 +5914,6 @@ var (
 		models.CategoryTypeExpense: "EXPENSE",
 	}
 )
-
-func (ec *executionContext) unmarshalNCreateAccount2finawiseᚗappᚋserverᚋgraphqlᚐCreateAccount(ctx context.Context, v any) (CreateAccount, error) {
-	res, err := ec.unmarshalInputCreateAccount(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
 
 func (ec *executionContext) unmarshalNCreateBudget2finawiseᚗappᚋserverᚋgraphqlᚐCreateBudget(ctx context.Context, v any) (CreateBudget, error) {
 	res, err := ec.unmarshalInputCreateBudget(ctx, v)

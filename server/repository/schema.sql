@@ -1,3 +1,7 @@
+CREATE TABLE IF NOT EXISTS "licensekeys" (
+    "key" TEXT PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS "accounts" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "group_id" INTEGER NOT NULL,

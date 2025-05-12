@@ -15,7 +15,7 @@ type SessionTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
-func Session(secret string) mux.MiddlewareFunc {
+func Session(secret string, strict bool) mux.MiddlewareFunc {
 	keyfunc := func(_ *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	}
@@ -26,18 +26,30 @@ func Session(secret string) mux.MiddlewareFunc {
 				if err != http.ErrNoCookie {
 					return err // should be unreachable
 				}
-				return httpx.H(next)(req, res)
+				if !strict {
+					return httpx.H(next)(req, res)
+				}
+				return httpx.ErrUnauthorized
 			}
 			if err := cookie.Valid(); err != nil {
-				return httpx.H(next)(req, res)
+				if !strict {
+					return httpx.H(next)(req, res)
+				}
+				return httpx.ErrBadRequest
 			}
 			token, err := jwt.ParseWithClaims(cookie.Value, new(SessionTokenClaims), keyfunc)
 			if err != nil || !token.Valid {
-				return httpx.H(next)(req, res)
+				if !strict {
+					return httpx.H(next)(req, res)
+				}
+				return httpx.ErrBadRequest
 			}
 			claims, ok := token.Claims.(*SessionTokenClaims)
 			if !ok {
-				return httpx.H(next)(req, res)
+				if !strict {
+					return httpx.H(next)(req, res)
+				}
+				return httpx.ErrBadRequest
 			}
 			req.SetValue("session", claims.Session)
 			return httpx.H(next)(req, res)

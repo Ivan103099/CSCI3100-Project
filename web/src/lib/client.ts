@@ -59,6 +59,20 @@ export const useLoginRequest = () => {
 		});
 };
 
+export const useRegisterRequest =
+	() =>
+	(data: {
+		email: string;
+		password: string;
+		fullname: string;
+		key: string;
+	}) =>
+		request<Account>({
+			endpoint: "auth/register",
+			method: "POST",
+			body: data,
+		});
+
 export const useLogoutRequest = () => {
 	const setAccount = useSetAtom($account);
 	return () =>

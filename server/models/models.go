@@ -36,7 +36,7 @@ type Category struct {
 }
 
 type Budget struct {
-	Amount     float64  `json:"amount"`
+	Amount     float64  `db:"amount" json:"amount"`
 	CategoryID types.ID `db:"category_id" json:"cid"`
 }
 

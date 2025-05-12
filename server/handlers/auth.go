@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -36,15 +37,49 @@ func newAuthHandler(c *container.Container) Handler {
 func (h *AuthHandler) Mount(router *mux.Router) {
 	r := router.PathPrefix("/api/auth").Subrouter()
 	r.Use(middlewares.RateLimit())
-	r.Use(middlewares.Session(h.config.Secret))
-	r.Handle("/login", h.handleLogin()).Methods(http.MethodPost, http.MethodOptions)
-	r.Handle("/logout", h.handleLogout()).Methods(http.MethodPost, http.MethodOptions)
+	r.Use(middlewares.Session(h.config.Secret, false))
+	r.Handle("/register", h.handleRegister()).
+		Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/login", h.handleLogin()).
+		Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/logout", h.handleLogout()).
+		Methods(http.MethodPost, http.MethodOptions)
+}
+
+func (h *AuthHandler) handleRegister() httpx.HandlerFunc {
+	type Params struct {
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,min=8,max=30"`
+		Fullname string `json:"fullname" validate:"required,max=30,printascii"`
+		Key      string `json:"key" validate:"required,uuid"`
+	}
+	return func(req *httpx.Request, res *httpx.Responder) error {
+		var params Params
+		if err := req.Bind(&params); err != nil {
+			return err
+		}
+
+		a, err := h.account.Register(params.Email, params.Password, params.Fullname, params.Key)
+		if err != nil {
+			if err == account.ErrLicenseKey {
+				return httpx.ErrBadRequest.WithError(err)
+			}
+			var e *repository.Error
+			if errors.As(err, &e) && e.Code() == 2067 {
+				// SQLITE_CONSTRAINT_UNIQUE
+				return res.Status(http.StatusConflict).String("account already exists")
+			}
+			return err
+		}
+
+		return res.Status(http.StatusCreated).JSON(a, "")
+	}
 }
 
 func (h *AuthHandler) handleLogin() httpx.HandlerFunc {
 	type Params struct {
 		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"password" validate:"required"` // plain text
+		Password string `json:"password" validate:"required"`
 	}
 	return func(req *httpx.Request, res *httpx.Responder) error {
 		var params Params

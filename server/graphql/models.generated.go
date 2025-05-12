@@ -7,12 +7,6 @@ import (
 	"finawise.app/server/models/types"
 )
 
-type CreateAccount struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Fullname string `json:"fullname"`
-}
-
 type CreateBudget struct {
 	CategoryID types.ID `json:"cid"`
 	Amount     float64  `json:"amount"`

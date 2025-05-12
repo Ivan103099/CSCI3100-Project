@@ -3,12 +3,15 @@ import { useNavigate } from "react-router";
 import { Form } from "react-aria-components";
 import { ChevronLeft } from "lucide-react";
 
-import { useCreateAccountMutation } from "@/lib/graphql";
+import { useRegisterRequest } from "@/lib/client";
 
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
 import { toasts } from "@/components/Toast";
+
+const UUID_REGEX =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default function AuthRegisterPage() {
 	const navigate = useNavigate();
@@ -16,26 +19,19 @@ export default function AuthRegisterPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [fullname, setFullname] = useState("");
+	const [key, setKey] = useState("");
 
-	const [, createAccount] = useCreateAccountMutation();
+	const requestRegister = useRegisterRequest();
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		createAccount({
+		requestRegister({
 			email,
 			password,
 			fullname,
-		}).then(({ error }) => {
-			if (error)
-				toasts.add(
-					{
-						title: "Register Failed",
-						description: error.message,
-						variant: "destructive",
-					},
-					{ timeout: 5000 },
-				);
-			else {
+			key,
+		})
+			.then(() => {
 				toasts.add(
 					{
 						title: "Register Success",
@@ -45,8 +41,17 @@ export default function AuthRegisterPage() {
 					{ timeout: 5000 },
 				);
 				navigate("/login");
-			}
-		});
+			})
+			.catch(({ message }) =>
+				toasts.add(
+					{
+						title: "Register Failed",
+						description: message,
+						variant: "destructive",
+					},
+					{ timeout: 5000 },
+				),
+			);
 	};
 
 	return (
@@ -86,7 +91,16 @@ export default function AuthRegisterPage() {
 						value={fullname}
 						onChange={setFullname}
 					/>
-					<TextField type="text" label="License Key" isRequired />
+					<TextField
+						type="text"
+						label="License Key"
+						isRequired
+						value={key}
+						validate={(value) =>
+							!UUID_REGEX.test(value) ? "Invalid license key format." : null
+						}
+						onChange={(value) => setKey(value.toLowerCase())}
+					/>
 					<Button type="submit" className="w-full">
 						Register
 					</Button>

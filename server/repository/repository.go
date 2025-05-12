@@ -54,7 +54,6 @@ type Repository interface {
 	container.Initializable
 	container.Terminatable
 
-	CreateAccount(a models.Account) (int64, error)
 	CreateCategory(c models.Category) (types.ID, error)
 	CreateTransaction(t models.Transaction) (types.ID, error)
 	CreateBudget(b models.Budget) error
@@ -67,6 +66,7 @@ type Repository interface {
 	GetAccount(aid int64) (models.Account, error)
 	GetAccountSummary(aid int64) (as models.AccountSummary, err error)
 
+	CreateAccount(a models.Account, key string) (int64, error)
 	FindAccountByEmail(email string) (models.Account, error)
 
 	// TODO: implement pagination
@@ -98,40 +98,6 @@ func (r *repository) Terminate() (err error) {
 		err = r.db.Close()
 	}
 	return
-}
-
-func (r *repository) CreateAccount(a models.Account) (int64, error) {
-	tx, err := r.db.Beginx()
-	if err != nil {
-		return -1, err
-	}
-	defer tx.Rollback()
-	s, args := SQL.Insert("groups").
-		Columns("id").
-		Values(nil).
-		Suffix("RETURNING id").
-		MustSQL()
-	result, err := tx.Exec(s, args...)
-	if err != nil {
-		return -1, err
-	}
-	gid, err := result.LastInsertId()
-	if err != nil {
-		return -1, err
-	}
-	s, args = SQL.Insert("accounts").
-		Columns("id", "group_id", "email", "fullname", "passhash").
-		Values(nil, gid, a.Email, a.Fullname, a.Passhash).
-		Suffix("RETURNING id").
-		MustSQL()
-	result, err = tx.Exec(s, args...)
-	if err != nil {
-		return -1, err
-	}
-	if err := tx.Commit(); err != nil {
-		return -1, err
-	}
-	return result.LastInsertId()
 }
 
 func (r *repository) CreateCategory(c models.Category) (types.ID, error) {
@@ -240,6 +206,60 @@ func (r *repository) GetAccountSummary(aid int64) (as models.AccountSummary, err
 		MustSQL()
 	err = r.db.Get(&as, s, args...)
 	return
+}
+
+func (r *repository) CreateAccount(a models.Account, key string) (int64, error) {
+	s, args := SQL.Select("key").
+		From("licensekeys").
+		Where(sq.Eq{"key": key}).
+		MustSQL()
+	if err := r.db.Get(new(string), s, args...); err != nil {
+		return -1, err
+	}
+
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return -1, err
+	}
+	defer tx.Rollback()
+
+	s, args = SQL.Delete("licensekeys").
+		Where(sq.Eq{"key": key}).
+		MustSQL()
+	_, err = tx.Exec(s, args...)
+	if err != nil {
+		return -1, err
+	}
+
+	s, args = SQL.Insert("groups").
+		Columns("id").
+		Values(nil).
+		Suffix("RETURNING id").
+		MustSQL()
+	result, err := tx.Exec(s, args...)
+	if err != nil {
+		return -1, err
+	}
+
+	gid, err := result.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+
+	s, args = SQL.Insert("accounts").
+		Columns("id", "group_id", "email", "fullname", "passhash").
+		Values(nil, gid, a.Email, a.Fullname, a.Passhash).
+		Suffix("RETURNING id").
+		MustSQL()
+	result, err = tx.Exec(s, args...)
+	if err != nil {
+		return -1, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return -1, err
+	}
+	return result.LastInsertId()
 }
 
 func (r *repository) FindAccountByEmail(email string) (a models.Account, err error) {

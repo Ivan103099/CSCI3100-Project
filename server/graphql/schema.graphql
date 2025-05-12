@@ -1,8 +1,6 @@
 scalar ULID
 scalar Timestamp
 
-directive @auth(enabled: Boolean!) on FIELD_DEFINITION
-
 directive @validate(tag: String!) on INPUT_FIELD_DEFINITION
 
 directive @goField(
@@ -64,18 +62,12 @@ type Budget {
 }
 
 type Query {
-	account: Account! @auth(enabled: true)
-	category(id: ULID!): Category! @auth(enabled: true)
-	categories(ct: CategoryType): [Category!]! @auth(enabled: true)
-	transaction(id: ULID!): Transaction! @auth(enabled: true)
-	transactions(ct: CategoryType): [Transaction!]! @auth(enabled: true)
-	budgets: [Budget!]! @auth(enabled: true)
-}
-
-input CreateAccount {
-	email: String! @validate(tag: "required,email")
-	password: String! @validate(tag: "required,min=8,max=30")
-	fullname: String! @validate(tag: "required,max=30,printascii")
+	account: Account!
+	category(id: ULID!): Category!
+	categories(ct: CategoryType): [Category!]!
+	transaction(id: ULID!): Transaction!
+	transactions(ct: CategoryType): [Transaction!]!
+	budgets: [Budget!]!
 }
 
 input CreateCategory {
@@ -98,8 +90,7 @@ input CreateBudget {
 }
 
 type Mutation {
-	createAccount(a: CreateAccount!): Account! @auth(enabled: false)
-	createCategory(c: CreateCategory!): Category! @auth(enabled: true)
-	createTransaction(t: CreateTransaction!): Transaction! @auth(enabled: true)
-	createBudget(b: CreateBudget!): Budget! @auth(enabled: true)
+	createCategory(c: CreateCategory!): Category!
+	createTransaction(t: CreateTransaction!): Transaction!
+	createBudget(b: CreateBudget!): Budget!
 }
