@@ -90,7 +90,6 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Account      func(childComplexity int) int
-		Budget       func(childComplexity int, cid types.ID) int
 		Budgets      func(childComplexity int) int
 		Categories   func(childComplexity int, ct *models.CategoryType) int
 		Category     func(childComplexity int, id types.ID) int
@@ -129,7 +128,6 @@ type QueryResolver interface {
 	Categories(ctx context.Context, ct *models.CategoryType) ([]models.Category, error)
 	Transaction(ctx context.Context, id types.ID) (models.Transaction, error)
 	Transactions(ctx context.Context, ct *models.CategoryType) ([]models.Transaction, error)
-	Budget(ctx context.Context, cid types.ID) (models.Budget, error)
 	Budgets(ctx context.Context) ([]models.Budget, error)
 }
 type TransactionResolver interface {
@@ -314,18 +312,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Account(childComplexity), true
-
-	case "Query.budget":
-		if e.complexity.Query.Budget == nil {
-			break
-		}
-
-		args, err := ec.field_Query_budget_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Budget(childComplexity, args["cid"].(types.ID)), true
 
 	case "Query.budgets":
 		if e.complexity.Query.Budgets == nil {
@@ -713,29 +699,6 @@ func (ec *executionContext) field_Query___type_argsName(
 	}
 
 	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_budget_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Query_budget_argsCid(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["cid"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Query_budget_argsCid(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (types.ID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("cid"))
-	if tmp, ok := rawArgs["cid"]; ok {
-		return ec.unmarshalNULID2finawiseᚗappᚋserverᚋmodelsᚋtypesᚐID(ctx, tmp)
-	}
-
-	var zeroVal types.ID
 	return zeroVal, nil
 }
 
@@ -2459,94 +2422,6 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_transactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_budget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_budget(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Budget(rctx, fc.Args["cid"].(types.ID))
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			enabled, err := ec.unmarshalNBoolean2bool(ctx, true)
-			if err != nil {
-				var zeroVal models.Budget
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal models.Budget
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0, enabled)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(models.Budget); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be finawise.app/server/models.Budget`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(models.Budget)
-	fc.Result = res
-	return ec.marshalNBudget2finawiseᚗappᚋserverᚋmodelsᚐBudget(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_budget(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "amount":
-				return ec.fieldContext_Budget_amount(ctx, field)
-			case "category":
-				return ec.fieldContext_Budget_category(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Budget", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_budget_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5914,28 +5789,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_transactions(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "budget":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_budget(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

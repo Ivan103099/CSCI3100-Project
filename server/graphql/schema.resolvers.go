@@ -117,11 +117,6 @@ func (r *queryResolver) Transactions(ctx context.Context, ct *models.CategoryTyp
 	return r.Repository.ListTransactions(session.AccountID, nil, ct)
 }
 
-// Budget is the resolver for the budget field.
-func (r *queryResolver) Budget(ctx context.Context, cid types.ID) (models.Budget, error) {
-	return r.Repository.GetBudget(cid)
-}
-
 // Budgets is the resolver for the budgets field.
 func (r *queryResolver) Budgets(ctx context.Context) ([]models.Budget, error) {
 	session := ctx.Value("session").(account.Session)

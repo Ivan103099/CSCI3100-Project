@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "transactions" (
 
 CREATE TABLE IF NOT EXISTS "budgets" (
     "category_id" TEXT PRIMARY KEY,
-    "amount" REAL NOT NULL,
+    "amount" REAL NOT NULL CHECK ("amount" > 0),
     FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
