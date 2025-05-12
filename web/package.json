@@ -1,6 +1,6 @@
 {
   "name": "finawise-web",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Personal Finance Management Web App",
   "type": "module",
   "scripts": {
