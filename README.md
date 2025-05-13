@@ -93,3 +93,4 @@ SECRET="<secret>" # secret key for jwt
 
 - `main`: trunk for major releases
 - `develop`: for active development, merges to `main` when ready
+- `test`: for test case
